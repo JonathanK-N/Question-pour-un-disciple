@@ -48,6 +48,15 @@
     <audio id="buzzer-sound" preload="auto">
         <source src="{{ url_for('static', filename='buzzer.mp3') }}" type="audio/mpeg">
     </audio>
+    <audio id="timer-sound" preload="auto">
+        <source src="{{ url_for('static', filename='timer.mp3') }}" type="audio/mpeg">
+    </audio>
+    <audio id="correct-sound" preload="auto">
+        <source src="{{ url_for('static', filename='correct.mp3') }}" type="audio/mpeg">
+    </audio>
+    <audio id="wrong-sound" preload="auto">
+        <source src="{{ url_for('static', filename='wrong.mp3') }}" type="audio/mpeg">
+    </audio>
 
     <script>
         const socket = io();
@@ -59,11 +68,13 @@
         }
 
         function correctAnswer() {
+            document.getElementById('correct-sound').play().catch(e => {});
             socket.emit('correct_answer');
             disableBuzzerControls();
         }
 
         function wrongAnswer() {
+            document.getElementById('wrong-sound').play().catch(e => {});
             socket.emit('wrong_answer');
             disableBuzzerControls();
         }
@@ -135,6 +146,10 @@
         socket.on('game_finished', function() {
             document.getElementById('buzzer-status').textContent = 'Jeu terminé !';
             alert('Le jeu est terminé ! Consultez les résultats sur l\'écran de projection.');
+        });
+
+        socket.on('time_warning', function() {
+            document.getElementById('timer-sound').play().catch(e => {});
         });
 
         function updatePlayersList() {

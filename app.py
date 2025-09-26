@@ -109,6 +109,11 @@ def handle_next_question():
     """Passer à la question suivante manuellement"""
     next_question()
 
+@socketio.on('time_warning')
+def handle_time_warning():
+    """Diffuser l'alerte temps"""
+    socketio.emit('time_warning')
+
 @socketio.on('start_game')
 def handle_start_game():
     """Démarrer le jeu"""

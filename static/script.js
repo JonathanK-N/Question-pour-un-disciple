@@ -57,6 +57,8 @@ function startTimer() {
         if (timer <= 0) {
             clearInterval(timerInterval);
             socket.emit('time_up');
+        } else if (timer === 10) {
+            socket.emit('time_warning');
         }
     }, 1000);
 }
