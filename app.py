@@ -5,7 +5,7 @@ import os
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'quiz_secret_key'
-socketio = SocketIO(app, cors_allowed_origins="*")
+socketio = SocketIO(app, cors_allowed_origins="*", logger=True, engineio_logger=True)
 
 # État du jeu
 game_state = {
