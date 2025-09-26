@@ -591,6 +591,21 @@ button:hover {
     font-weight: bold;
 }
 
+.animate-in {
+    animation: slideIn 0.8s ease-out;
+}
+
+@keyframes slideIn {
+    0% {
+        transform: translateY(100px) scale(0.8);
+        opacity: 0;
+    }
+    100% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+}
+
 /* Page des résultats */
 .winner-container {
     text-align: center;

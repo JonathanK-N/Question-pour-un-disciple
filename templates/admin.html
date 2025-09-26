@@ -68,13 +68,17 @@
         }
 
         function correctAnswer() {
-            document.getElementById('correct-sound').play().catch(e => {});
+            const audio = document.getElementById('correct-sound');
+            audio.currentTime = 0;
+            audio.play().catch(e => console.log('Son correct non disponible'));
             socket.emit('correct_answer');
             disableBuzzerControls();
         }
 
         function wrongAnswer() {
-            document.getElementById('wrong-sound').play().catch(e => {});
+            const audio = document.getElementById('wrong-sound');
+            audio.currentTime = 0;
+            audio.play().catch(e => console.log('Son incorrect non disponible'));
             socket.emit('wrong_answer');
             disableBuzzerControls();
         }
@@ -102,7 +106,9 @@
                 // Jouer le son du timer si nouvelle question
                 if (data.question_number !== currentQuestionNumber) {
                     currentQuestionNumber = data.question_number;
-                    document.getElementById('timer-sound').play().catch(e => {});
+                    const timerAudio = document.getElementById('timer-sound');
+                    timerAudio.currentTime = 0;
+                    timerAudio.play().catch(e => console.log('Son timer non disponible'));
                 }
                 
                 document.getElementById('question-counter').textContent = 

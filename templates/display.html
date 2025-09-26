@@ -130,31 +130,33 @@
         });
 
         function showFinalResults() {
-            // Utiliser les données déjà disponibles
             const sortedPlayers = Object.entries(gameData.players || {})
                 .sort(([,a], [,b]) => b.score - a.score);
+            
+            document.querySelector('.display-container').style.display = 'none';
+            document.getElementById('final-results').style.display = 'flex';
             
             const podium = document.getElementById('podium');
             podium.innerHTML = '';
             
-            sortedPlayers.slice(0, 3).forEach(([name, data], index) => {
-                const div = document.createElement('div');
-                div.className = `podium-place place-${index + 1}`;
-                
-                const trophies = ['🥇', '🥈', '🥉'];
-                const positions = ['1er', '2ème', '3ème'];
-                
-                div.innerHTML = `
-                    <div class="trophy">${trophies[index]}</div>
-                    <div class="winner-name">${name}</div>
-                    <div class="winner-score">${data.score} points</div>
-                    <div class="position">${positions[index]}</div>
-                `;
-                podium.appendChild(div);
-            });
+            const trophies = ['🥇', '🥈', '🥉'];
+            const positions = ['1er', '2ème', '3ème'];
             
-            document.querySelector('.display-container').style.display = 'none';
-            document.getElementById('final-results').style.display = 'flex';
+            // Animation séquentielle des 3 premiers
+            sortedPlayers.slice(0, 3).forEach(([name, data], index) => {
+                setTimeout(() => {
+                    const div = document.createElement('div');
+                    div.className = `podium-place place-${index + 1} animate-in`;
+                    
+                    div.innerHTML = `
+                        <div class="trophy">${trophies[index]}</div>
+                        <div class="winner-name">${name}</div>
+                        <div class="winner-score">${data.score} points</div>
+                        <div class="position">${positions[index]}</div>
+                    `;
+                    podium.appendChild(div);
+                }, index * 1000);
+            });
         }
 
         socket.on('connect', function() {
