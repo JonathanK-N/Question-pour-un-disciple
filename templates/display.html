@@ -17,6 +17,7 @@
                     <div id="timer-progress"></div>
                 </div>
             </div>
+            <button id="fullscreen-btn" onclick="toggleFullscreen()">📺 Plein écran</button>
         </header>
 
         <main class="display-main">
@@ -129,15 +130,8 @@
         });
 
         function showFinalResults() {
-            document.querySelector('.display-container').style.display = 'none';
-            document.getElementById('final-results').style.display = 'flex';
-            
-            // Récupérer les données finales via une nouvelle requête
-            socket.emit('get_final_results');
-        }
-
-        socket.on('final_results', function(players) {
-            const sortedPlayers = Object.entries(players)
+            // Utiliser les données déjà disponibles
+            const sortedPlayers = Object.entries(gameData.players || {})
                 .sort(([,a], [,b]) => b.score - a.score);
             
             const podium = document.getElementById('podium');
@@ -158,10 +152,31 @@
                 `;
                 podium.appendChild(div);
             });
-        });
+            
+            document.querySelector('.display-container').style.display = 'none';
+            document.getElementById('final-results').style.display = 'flex';
+        }
 
         socket.on('connect', function() {
             console.log('Écran de projection connecté');
+        });
+        
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log('Erreur plein écran:', err);
+                });
+                document.getElementById('fullscreen-btn').textContent = '❌ Quitter';
+            } else {
+                document.exitFullscreen();
+                document.getElementById('fullscreen-btn').textContent = '📺 Plein écran';
+            }
+        }
+        
+        document.addEventListener('fullscreenchange', function() {
+            if (!document.fullscreenElement) {
+                document.getElementById('fullscreen-btn').textContent = '📺 Plein écran';
+            }
         });
     </script>
 </body>

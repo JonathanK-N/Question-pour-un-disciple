@@ -423,6 +423,20 @@ button:hover {
     padding: 20px;
     border-radius: 15px;
     border: 2px solid #FFD700;
+    position: relative;
+}
+
+#fullscreen-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: #FFD700;
+    color: #1e3c72;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9em;
 }
 
 .display-main {
