@@ -102,7 +102,31 @@
         });
 
         socket.on('buzzer_activated', function(data) {
-            document.getElementById('buzzer-sound').play().catch(e => {});
+            // Essayer le fichier MP3, sinon générer un son
+            const audio = document.getElementById('buzzer-sound');
+            audio.play().catch(e => {
+                // Fallback: générer un son
+                try {
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                    oscillator.type = 'square';
+                    
+                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                    
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.5);
+                } catch(err) {
+                    console.log('Son non disponible');
+                }
+            });
+            
             document.getElementById('buzzer-status').innerHTML = 
                 `<strong>${data.player}</strong> a buzzé !`;
             enableBuzzerControls();
