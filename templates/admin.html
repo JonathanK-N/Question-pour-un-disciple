@@ -93,10 +93,18 @@
             document.getElementById('wrong-btn').disabled = false;
         }
 
+        let currentQuestionNumber = 0;
+        
         socket.on('game_update', function(data) {
             gameData = data;
             
             if (data.current_question) {
+                // Jouer le son du timer si nouvelle question
+                if (data.question_number !== currentQuestionNumber) {
+                    currentQuestionNumber = data.question_number;
+                    document.getElementById('timer-sound').play().catch(e => {});
+                }
+                
                 document.getElementById('question-counter').textContent = 
                     `Question ${data.question_number}/${data.total_questions}`;
                 document.getElementById('current-question').textContent = data.current_question.question;
