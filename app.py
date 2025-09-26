@@ -28,15 +28,31 @@ def load_questions():
 
 @app.route('/')
 def index():
-    """Page principale - écran de jeu"""
-    return render_template('index.html')
+    """Page d'accueil - sélection du rôle"""
+    return render_template('home.html')
 
-@app.route('/buzzer_page/<player_name>')
-def buzzer_page(player_name):
-    """Page buzzer pour les joueurs"""
+@app.route('/display')
+def display():
+    """Écran de projection"""
+    return render_template('display.html')
+
+@app.route('/admin')
+def admin():
+    """Interface animateur"""
+    return render_template('admin.html')
+
+@app.route('/player')
+def player():
+    """Interface joueur"""
+    return render_template('player.html')
+
+@socketio.on('join_player')
+def handle_join_player(data):
+    """Joueur rejoint la partie"""
+    player_name = data['name']
     if player_name not in game_state['players']:
         game_state['players'][player_name] = {'score': 0}
-    return render_template('buzzer.html', player_name=player_name)
+    socketio.emit('game_update', get_game_data())
 
 @app.route('/winner')
 def winner():
@@ -83,6 +99,16 @@ def handle_time_up():
     """Temps écoulé"""
     next_question()
 
+@socketio.on('get_final_results')
+def handle_get_final_results():
+    """Envoyer les résultats finaux"""
+    emit('final_results', game_state['players'])
+
+@socketio.on('next_question')
+def handle_next_question():
+    """Passer à la question suivante manuellement"""
+    next_question()
+
 @socketio.on('start_game')
 def handle_start_game():
     """Démarrer le jeu"""
@@ -123,4 +149,6 @@ def get_game_data():
     }
 
 if __name__ == '__main__':
-    socketio.run(app, host='0.0.0.0', port=5000, debug=True)
+    import os
+    port = int(os.environ.get('PORT', 5000))
+    socketio.run(app, host='0.0.0.0', port=port, debug=False)

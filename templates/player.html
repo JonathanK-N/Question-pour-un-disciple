@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interface Joueur</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+</head>
+<body class="player-page">
+    <div class="player-container">
+        <div id="login-screen">
+            <h1>🎮 Rejoindre la partie</h1>
+            <input type="text" id="player-name" placeholder="Votre nom" maxlength="20">
+            <button onclick="joinGame()">Rejoindre</button>
+        </div>
+
+        <div id="game-screen" style="display:none;">
+            <div class="player-header">
+                <h2 id="welcome-text"></h2>
+                <div class="player-score">
+                    Score: <span id="my-score">0</span>
+                </div>
+            </div>
+
+            <div class="buzzer-section">
+                <button id="buzzer-btn" onclick="pressBuzzer()" disabled>
+                    <span>BUZZER</span>
+                </button>
+                <div id="buzzer-status">En attente du début de partie...</div>
+            </div>
+
+            <div class="game-info">
+                <div id="question-info">Question 0/0</div>
+                <div id="timer-info">50s</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const socket = io();
+        let playerName = '';
+        let canBuzz = false;
+
+        function joinGame() {
+            const nameInput = document.getElementById('player-name');
+            playerName = nameInput.value.trim();
+            
+            if (playerName) {
+                socket.emit('join_player', {name: playerName});
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('game-screen').style.display = 'block';
+                document.getElementById('welcome-text').textContent = `Bienvenue ${playerName} !`;
+            }
+        }
+
+        function pressBuzzer() {
+            if (canBuzz) {
+                socket.emit('buzzer_press', {player: playerName});
+                canBuzz = false;
+                document.getElementById('buzzer-btn').classList.add('pressed');
+                document.getElementById('buzzer-btn').disabled = true;
+                document.getElementById('buzzer-status').textContent = 'Buzzer activé !';
+            }
+        }
+
+        socket.on('game_update', function(data) {
+            if (data.current_question) {
+                document.getElementById('question-info').textContent = 
+                    `Question ${data.question_number}/${data.total_questions}`;
+                
+                if (!data.buzzer_pressed && !data.game_finished) {
+                    canBuzz = true;
+                    document.getElementById('buzzer-btn').disabled = false;
+                    document.getElementById('buzzer-btn').classList.remove('pressed');
+                    document.getElementById('buzzer-status').textContent = 'Prêt à buzzer !';
+                }
+            }
+
+            // Mettre à jour le score du joueur
+            if (data.players && data.players[playerName]) {
+                document.getElementById('my-score').textContent = data.players[playerName].score;
+            }
+
+            if (data.game_finished) {
+                document.getElementById('buzzer-status').textContent = 'Jeu terminé !';
+                document.getElementById('buzzer-btn').disabled = true;
+            }
+        });
+
+        socket.on('buzzer_activated', function(data) {
+            if (data.player === playerName) {
+                document.getElementById('buzzer-status').textContent = 'Vous avez buzzé en premier ! 🎯';
+            } else {
+                document.getElementById('buzzer-status').textContent = `${data.player} a buzzé en premier`;
+                canBuzz = false;
+                document.getElementById('buzzer-btn').disabled = true;
+            }
+        });
+
+        socket.on('game_finished', function() {
+            document.getElementById('buzzer-status').innerHTML = 
+                '🏆 Jeu terminé !<br>Consultez les résultats sur l\'écran principal.';
+        });
+
+        // Permettre de rejoindre en appuyant sur Entrée
+        document.getElementById('player-name').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                joinGame();
+            }
+        });
+    </script>
+</body>
+</html>

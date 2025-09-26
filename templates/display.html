@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Écran de Projection</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+</head>
+<body class="display-page">
+    <div class="display-container">
+        <header class="display-header">
+            <h1>🏆 Question pour un Disciple 🏆</h1>
+            <div class="timer-section">
+                <div id="timer">50</div>
+                <div class="timer-bar">
+                    <div id="timer-progress"></div>
+                </div>
+            </div>
+        </header>
+
+        <main class="display-main">
+            <div class="question-display">
+                <div id="question-number">En attente...</div>
+                <div id="question-text">Le jeu va bientôt commencer !</div>
+                <div id="buzzer-alert"></div>
+            </div>
+        </main>
+
+        <aside class="display-scoreboard">
+            <h2>🏅 Classement</h2>
+            <div id="players-ranking"></div>
+        </aside>
+
+        <div id="final-results" class="final-screen" style="display:none;">
+            <h1>🎉 Résultats Finaux 🎉</h1>
+            <div id="podium"></div>
+        </div>
+    </div>
+
+    <script>
+        const socket = io();
+        let timer = 50;
+        let timerInterval;
+
+        function updateTimer(timeLeft) {
+            timer = timeLeft;
+            document.getElementById('timer').textContent = timer;
+            const percentage = (timer / 50) * 100;
+            document.getElementById('timer-progress').style.width = percentage + '%';
+            
+            if (timer <= 10) {
+                document.getElementById('timer-progress').style.background = 'linear-gradient(90deg, #ff4444, #cc0000)';
+            } else if (timer <= 20) {
+                document.getElementById('timer-progress').style.background = 'linear-gradient(90deg, #FFA500, #FF8C00)';
+            } else {
+                document.getElementById('timer-progress').style.background = 'linear-gradient(90deg, #FFD700, #FFA500)';
+            }
+        }
+
+        function startTimer() {
+            timer = 50;
+            updateTimer(timer);
+            
+            timerInterval = setInterval(() => {
+                timer--;
+                updateTimer(timer);
+                
+                if (timer <= 0) {
+                    clearInterval(timerInterval);
+                }
+            }, 1000);
+        }
+
+        function pauseTimer() {
+            clearInterval(timerInterval);
+        }
+
+        function updateRanking(players) {
+            const sortedPlayers = Object.entries(players || {})
+                .sort(([,a], [,b]) => b.score - a.score);
+            
+            const ranking = document.getElementById('players-ranking');
+            ranking.innerHTML = '';
+            
+            sortedPlayers.forEach(([name, data], index) => {
+                const div = document.createElement('div');
+                div.className = `player-rank rank-${index + 1}`;
+                div.innerHTML = `
+                    <span class="rank-number">${index + 1}</span>
+                    <span class="player-name">${name}</span>
+                    <span class="player-score">${data.score}</span>
+                `;
+                ranking.appendChild(div);
+            });
+        }
+
+        socket.on('game_update', function(data) {
+            if (data.current_question) {
+                document.getElementById('question-number').textContent = 
+                    `Question ${data.question_number} / ${data.total_questions}`;
+                document.getElementById('question-text').textContent = data.current_question.question;
+                
+                if (!data.timer_paused && !data.buzzer_pressed) {
+                    startTimer();
+                } else if (data.timer_paused) {
+                    pauseTimer();
+                }
+            }
+            
+            updateRanking(data.players);
+            
+            if (!data.buzzer_pressed) {
+                document.getElementById('buzzer-alert').textContent = '';
+            }
+        });
+
+        socket.on('buzzer_activated', function(data) {
+            document.getElementById('buzzer-alert').innerHTML = 
+                `🚨 <strong>${data.player}</strong> a buzzé ! 🚨`;
+            pauseTimer();
+        });
+
+        socket.on('game_finished', function() {
+            clearInterval(timerInterval);
+            setTimeout(() => {
+                showFinalResults();
+            }, 2000);
+        });
+
+        function showFinalResults() {
+            document.querySelector('.display-container').style.display = 'none';
+            document.getElementById('final-results').style.display = 'flex';
+            
+            // Récupérer les données finales via une nouvelle requête
+            socket.emit('get_final_results');
+        }
+
+        socket.on('final_results', function(players) {
+            const sortedPlayers = Object.entries(players)
+                .sort(([,a], [,b]) => b.score - a.score);
+            
+            const podium = document.getElementById('podium');
+            podium.innerHTML = '';
+            
+            sortedPlayers.slice(0, 3).forEach(([name, data], index) => {
+                const div = document.createElement('div');
+                div.className = `podium-place place-${index + 1}`;
+                
+                const trophies = ['🥇', '🥈', '🥉'];
+                const positions = ['1er', '2ème', '3ème'];
+                
+                div.innerHTML = `
+                    <div class="trophy">${trophies[index]}</div>
+                    <div class="winner-name">${name}</div>
+                    <div class="winner-score">${data.score} points</div>
+                    <div class="position">${positions[index]}</div>
+                `;
+                podium.appendChild(div);
+            });
+        });
+
+        socket.on('connect', function() {
+            console.log('Écran de projection connecté');
+        });
+    </script>
+</body>
+</html>

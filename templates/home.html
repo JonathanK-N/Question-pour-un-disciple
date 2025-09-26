@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Question pour un Disciple</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="home-container">
+        <h1>🏆 Question pour un Disciple 🏆</h1>
+        
+        <div class="role-selection">
+            <div class="role-card">
+                <h2>👨‍🏫 Animateur</h2>
+                <p>Gérer le jeu et valider les réponses</p>
+                <a href="/admin" class="btn btn-admin">Accéder</a>
+            </div>
+            
+            <div class="role-card">
+                <h2>🎮 Joueur</h2>
+                <p>Participer au quiz avec votre buzzer</p>
+                <a href="/player" class="btn btn-player">Jouer</a>
+            </div>
+            
+            <div class="role-card">
+                <h2>📺 Écran de projection</h2>
+                <p>Affichage pour le public</p>
+                <a href="/display" class="btn btn-display">Projeter</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
