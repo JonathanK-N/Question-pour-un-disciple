@@ -152,6 +152,10 @@
             document.getElementById('timer-sound').play().catch(e => {});
         });
 
+        socket.on('timer_start', function() {
+            document.getElementById('timer-sound').play().catch(e => {});
+        });
+
         function updatePlayersList() {
             const sortedPlayers = Object.entries(gameData.players || {})
                 .sort(([,a], [,b]) => b.score - a.score);

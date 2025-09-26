@@ -114,6 +114,11 @@ def handle_time_warning():
     """Diffuser l'alerte temps"""
     socketio.emit('time_warning')
 
+@socketio.on('timer_start')
+def handle_timer_start():
+    """Démarrage du timer"""
+    socketio.emit('timer_start')
+
 @socketio.on('start_game')
 def handle_start_game():
     """Démarrer le jeu"""
