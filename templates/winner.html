@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Résultats - Question pour un Disciple</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="winner-container">
+        <h1>🏆 Résultats Finaux 🏆</h1>
+        
+        <div class="podium">
+            {% for player, data in players[:3] %}
+                <div class="podium-place place-{{ loop.index }}">
+                    <div class="trophy">
+                        {% if loop.index == 1 %}🥇
+                        {% elif loop.index == 2 %}🥈
+                        {% else %}🥉
+                        {% endif %}
+                    </div>
+                    <div class="player-name">{{ player }}</div>
+                    <div class="score">{{ data.score }} points</div>
+                    <div class="position">{{ loop.index }}{{ 'er' if loop.index == 1 else 'ème' }}</div>
+                </div>
+            {% endfor %}
+        </div>
+
+        {% if players|length > 3 %}
+        <div class="other-players">
+            <h3>Autres participants</h3>
+            {% for player, data in players[3:] %}
+                <div class="player-result">
+                    <span>{{ loop.index + 3 }}. {{ player }}</span>
+                    <span>{{ data.score }} points</span>
+                </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <button onclick="window.location.href='/'" class="restart-btn">Nouvelle partie</button>
+    </div>
+</body>
+</html>

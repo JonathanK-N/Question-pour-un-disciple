@@ -1,0 +1,42 @@
+[
+    {
+        "question": "Quelle est la capitale de la France ?",
+        "answer": "Paris"
+    },
+    {
+        "question": "Combien font 7 x 8 ?",
+        "answer": "56"
+    },
+    {
+        "question": "Qui a écrit 'Les Misérables' ?",
+        "answer": "Victor Hugo"
+    },
+    {
+        "question": "Quelle est la planète la plus proche du Soleil ?",
+        "answer": "Mercure"
+    },
+    {
+        "question": "En quelle année a eu lieu la Révolution française ?",
+        "answer": "1789"
+    },
+    {
+        "question": "Quel est le plus grand océan du monde ?",
+        "answer": "Océan Pacifique"
+    },
+    {
+        "question": "Combien y a-t-il de continents sur Terre ?",
+        "answer": "7"
+    },
+    {
+        "question": "Qui a peint la Joconde ?",
+        "answer": "Léonard de Vinci"
+    },
+    {
+        "question": "Quelle est la formule chimique de l'eau ?",
+        "answer": "H2O"
+    },
+    {
+        "question": "Dans quel pays se trouve Machu Picchu ?",
+        "answer": "Pérou"
+    }
+]

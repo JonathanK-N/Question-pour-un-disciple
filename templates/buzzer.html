@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buzzer - {{ player_name }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+</head>
+<body class="buzzer-page">
+    <div class="buzzer-container">
+        <h1>{{ player_name }}</h1>
+        <button id="buzzer-btn" onclick="pressBuzzer()">
+            <span>BUZZER</span>
+        </button>
+        <div id="status">En attente...</div>
+    </div>
+
+    <script>
+        const socket = io();
+        const playerName = '{{ player_name }}';
+        let canBuzz = true;
+
+        function pressBuzzer() {
+            if (canBuzz) {
+                socket.emit('buzzer_press', {player: playerName});
+                canBuzz = false;
+                document.getElementById('buzzer-btn').classList.add('pressed');
+                document.getElementById('status').textContent = 'Buzzer activé !';
+            }
+        }
+
+        socket.on('game_update', function(data) {
+            if (!data.buzzer_pressed) {
+                canBuzz = true;
+                document.getElementById('buzzer-btn').classList.remove('pressed');
+                document.getElementById('status').textContent = 'En attente...';
+            }
+        });
+
+        socket.on('buzzer_activated', function(data) {
+            if (data.player === playerName) {
+                document.getElementById('status').textContent = 'Vous avez buzzé en premier !';
+            } else {
+                document.getElementById('status').textContent = data.player + ' a buzzé en premier';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Question pour un Disciple</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Question pour un Disciple</h1>
+            <div class="timer-container">
+                <div id="timer">50</div>
+                <div class="timer-bar">
+                    <div id="timer-progress"></div>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <div class="question-section">
+                <div id="question-number">Question 1/10</div>
+                <div id="question-text">Cliquez sur "Démarrer" pour commencer</div>
+                <div id="buzzer-alert"></div>
+            </div>
+
+            <div class="controls">
+                <button id="start-btn" onclick="startGame()">Démarrer le jeu</button>
+                <button id="correct-btn" onclick="correctAnswer()" style="display:none;">Réponse correcte</button>
+                <button id="wrong-btn" onclick="wrongAnswer()" style="display:none;">Réponse incorrecte</button>
+            </div>
+        </main>
+
+        <aside class="scoreboard">
+            <h2>Classement</h2>
+            <div id="players-list"></div>
+        </aside>
+    </div>
+
+    <audio id="buzzer-sound" preload="auto">
+        <source src="{{ url_for('static', filename='buzzer.mp3') }}" type="audio/mpeg">
+    </audio>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
