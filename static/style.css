@@ -326,6 +326,53 @@ button:hover {
     margin-bottom: 5px;
 }
 
+.pre-game-section {
+    text-align: center;
+    padding: 20px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 10px;
+}
+
+.pre-game-section h3 {
+    color: #FFD700;
+    margin-bottom: 15px;
+}
+
+.pre-game-section p {
+    margin-bottom: 20px;
+    font-size: 1.1em;
+}
+
+#game-url {
+    color: #4CAF50;
+    background: rgba(0,0,0,0.2);
+    padding: 5px 10px;
+    border-radius: 5px;
+}
+
+#connected-players {
+    margin: 20px 0;
+}
+
+#connected-players h4 {
+    color: #FFD700;
+    margin-bottom: 10px;
+}
+
+.waiting-player {
+    background: rgba(76,175,80,0.2);
+    color: #4CAF50;
+    padding: 8px;
+    margin: 5px 0;
+    border-radius: 5px;
+    border-left: 3px solid #4CAF50;
+}
+
+#start-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 /* Interface Joueur */
 .player-page {
     display: flex;

@@ -34,12 +34,20 @@
             </div>
 
             <div class="game-controls">
-                <button id="start-btn" onclick="startGame()">🚀 Démarrer le jeu</button>
+                <div id="pre-game" class="pre-game-section">
+                    <h3>⏳ En attente des joueurs</h3>
+                    <p>Les joueurs peuvent se connecter via : <strong id="game-url"></strong></p>
+                    <div id="connected-players">
+                        <h4>Joueurs connectés :</h4>
+                        <div id="players-waiting">Aucun joueur connecté</div>
+                    </div>
+                    <button id="start-btn" onclick="startGame()" disabled>🚀 Démarrer le jeu</button>
+                </div>
                 <button id="next-btn" onclick="nextQuestion()" style="display:none;">➡️ Question suivante</button>
             </div>
 
-            <div class="players-panel">
-                <h3>Joueurs connectés</h3>
+            <div class="players-panel" id="game-players" style="display:none;">
+                <h3>Joueurs en jeu</h3>
                 <div id="players-list"></div>
             </div>
         </div>
@@ -64,7 +72,8 @@
 
         function startGame() {
             socket.emit('start_game');
-            document.getElementById('start-btn').style.display = 'none';
+            document.getElementById('pre-game').style.display = 'none';
+            document.getElementById('game-players').style.display = 'block';
         }
 
         function correctAnswer() {
@@ -171,7 +180,23 @@
         });
 
         function updatePlayersList() {
-            const sortedPlayers = Object.entries(gameData.players || {})
+            const players = gameData.players || {};
+            const playerCount = Object.keys(players).length;
+            
+            // Mise à jour de la liste d'attente
+            const waitingList = document.getElementById('players-waiting');
+            if (playerCount === 0) {
+                waitingList.textContent = 'Aucun joueur connecté';
+                document.getElementById('start-btn').disabled = true;
+            } else {
+                waitingList.innerHTML = Object.keys(players).map(name => 
+                    `<div class="waiting-player">👤 ${name}</div>`
+                ).join('');
+                document.getElementById('start-btn').disabled = false;
+            }
+            
+            // Mise à jour de la liste en jeu
+            const sortedPlayers = Object.entries(players)
                 .sort(([,a], [,b]) => b.score - a.score);
             
             const playersList = document.getElementById('players-list');
@@ -187,6 +212,7 @@
 
         socket.on('connect', function() {
             console.log('Animateur connecté');
+            document.getElementById('game-url').textContent = window.location.origin + '/player';
         });
     </script>
 </body>
