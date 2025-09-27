@@ -83,7 +83,7 @@ def handle_buzzer(data):
 def handle_correct_answer():
     """Réponse correcte"""
     if game_state['buzzer_player']:
-        game_state['players'][game_state['buzzer_player']]['score'] += 1
+        game_state['players'][game_state['buzzer_player']]['score'] += 20
     next_question()
 
 @socketio.on('wrong_answer')
