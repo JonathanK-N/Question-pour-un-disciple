@@ -119,6 +119,39 @@ def handle_timer_start():
     """Démarrage du timer"""
     socketio.emit('timer_start')
 
+@socketio.on('get_questions')
+def handle_get_questions():
+    """Envoyer la liste des questions"""
+    emit('questions_list', game_state['questions'])
+
+@socketio.on('add_question')
+def handle_add_question(data):
+    """Ajouter une nouvelle question"""
+    new_question = {
+        'question': data['question'],
+        'answer': data['answer']
+    }
+    game_state['questions'].append(new_question)
+    save_questions()
+    emit('questions_list', game_state['questions'])
+
+@socketio.on('delete_question')
+def handle_delete_question(data):
+    """Supprimer une question"""
+    index = data['index']
+    if 0 <= index < len(game_state['questions']):
+        game_state['questions'].pop(index)
+        save_questions()
+        emit('questions_list', game_state['questions'])
+
+def save_questions():
+    """Sauvegarder les questions dans le fichier JSON"""
+    try:
+        with open('data/questions.json', 'w', encoding='utf-8') as f:
+            json.dump(game_state['questions'], f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        print(f'Erreur sauvegarde: {e}')
+
 @socketio.on('start_game')
 def handle_start_game():
     """Démarrer le jeu"""
