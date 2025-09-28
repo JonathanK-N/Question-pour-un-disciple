@@ -39,6 +39,22 @@
         </div>
     </div>
 
+    <audio id="buzzer-sound" preload="auto">
+        <source src="{{ url_for('static', filename='buzzer.mp3') }}" type="audio/mpeg">
+    </audio>
+    <audio id="timer-sound" preload="auto">
+        <source src="{{ url_for('static', filename='timer.mp3') }}" type="audio/mpeg">
+    </audio>
+    <audio id="correct-sound" preload="auto">
+        <source src="{{ url_for('static', filename='correct.mp3') }}" type="audio/mpeg">
+    </audio>
+    <audio id="wrong-sound" preload="auto">
+        <source src="{{ url_for('static', filename='wrong.mp3') }}" type="audio/mpeg">
+    </audio>
+    <audio id="timeout-sound" preload="auto">
+        <source src="{{ url_for('static', filename='timeout.mp3') }}" type="audio/mpeg">
+    </audio>
+
     <script>
         const socket = io();
         let timer = 50;
@@ -69,6 +85,11 @@
                 
                 if (timer <= 0) {
                     clearInterval(timerInterval);
+                    // Son de fin de temps
+                    const timeoutAudio = document.getElementById('timeout-sound');
+                    timeoutAudio.currentTime = 0;
+                    timeoutAudio.play().catch(e => console.log('Son timeout non disponible'));
+                    socket.emit('time_up');
                 }
             }, 1000);
         }
@@ -104,6 +125,10 @@
                 
                 if (!data.timer_paused && !data.buzzer_pressed) {
                     startTimer();
+                    // Son timer au début de la question
+                    const timerAudio = document.getElementById('timer-sound');
+                    timerAudio.currentTime = 0;
+                    timerAudio.play().catch(e => console.log('Son timer non disponible'));
                 } else if (data.timer_paused) {
                     pauseTimer();
                 }
@@ -117,6 +142,32 @@
         });
 
         socket.on('buzzer_activated', function(data) {
+            // Son buzzer
+            const buzzerAudio = document.getElementById('buzzer-sound');
+            buzzerAudio.currentTime = 0;
+            buzzerAudio.play().catch(e => {
+                // Fallback son généré
+                try {
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                    oscillator.type = 'square';
+                    
+                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                    
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.5);
+                } catch(err) {
+                    console.log('Son non disponible');
+                }
+            });
+            
             document.getElementById('buzzer-alert').innerHTML = 
                 `🚨 <strong>${data.player}</strong> a buzzé ! 🚨`;
             pauseTimer();
@@ -158,6 +209,14 @@
                 }, index * 1000);
             });
         }
+
+        socket.on('play_sound', function(data) {
+            const audio = document.getElementById(data.sound + '-sound');
+            if (audio) {
+                audio.currentTime = 0;
+                audio.play().catch(e => console.log('Son non disponible'));
+            }
+        });
 
         socket.on('connect', function() {
             console.log('Écran de projection connecté');

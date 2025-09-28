@@ -65,18 +65,7 @@
         </div>
     </div>
 
-    <audio id="buzzer-sound" preload="auto">
-        <source src="{{ url_for('static', filename='buzzer.mp3') }}" type="audio/mpeg">
-    </audio>
-    <audio id="timer-sound" preload="auto">
-        <source src="{{ url_for('static', filename='timer.mp3') }}" type="audio/mpeg">
-    </audio>
-    <audio id="correct-sound" preload="auto">
-        <source src="{{ url_for('static', filename='correct.mp3') }}" type="audio/mpeg">
-    </audio>
-    <audio id="wrong-sound" preload="auto">
-        <source src="{{ url_for('static', filename='wrong.mp3') }}" type="audio/mpeg">
-    </audio>
+
 
     <script>
         const socket = io();
@@ -89,17 +78,11 @@
         }
 
         function correctAnswer() {
-            const audio = document.getElementById('correct-sound');
-            audio.currentTime = 0;
-            audio.play().catch(e => console.log('Son correct non disponible'));
             socket.emit('correct_answer');
             disableBuzzerControls();
         }
 
         function wrongAnswer() {
-            const audio = document.getElementById('wrong-sound');
-            audio.currentTime = 0;
-            audio.play().catch(e => console.log('Son incorrect non disponible'));
             socket.emit('wrong_answer');
             disableBuzzerControls();
         }
@@ -124,12 +107,8 @@
             gameData = data;
             
             if (data.current_question) {
-                // Jouer le son du timer si nouvelle question
                 if (data.question_number !== currentQuestionNumber) {
                     currentQuestionNumber = data.question_number;
-                    const timerAudio = document.getElementById('timer-sound');
-                    timerAudio.currentTime = 0;
-                    timerAudio.play().catch(e => console.log('Son timer non disponible'));
                 }
                 
                 document.getElementById('question-counter').textContent = 
@@ -148,31 +127,6 @@
         });
 
         socket.on('buzzer_activated', function(data) {
-            // Essayer le fichier MP3, sinon générer un son
-            const audio = document.getElementById('buzzer-sound');
-            audio.play().catch(e => {
-                // Fallback: générer un son
-                try {
-                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                    const oscillator = audioContext.createOscillator();
-                    const gainNode = audioContext.createGain();
-                    
-                    oscillator.connect(gainNode);
-                    gainNode.connect(audioContext.destination);
-                    
-                    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-                    oscillator.type = 'square';
-                    
-                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-                    
-                    oscillator.start(audioContext.currentTime);
-                    oscillator.stop(audioContext.currentTime + 0.5);
-                } catch(err) {
-                    console.log('Son non disponible');
-                }
-            });
-            
             document.getElementById('buzzer-status').innerHTML = 
                 `<strong>${data.player}</strong> a buzzé !`;
             enableBuzzerControls();

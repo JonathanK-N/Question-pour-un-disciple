@@ -84,11 +84,13 @@ def handle_correct_answer():
     """Réponse correcte"""
     if game_state['buzzer_player']:
         game_state['players'][game_state['buzzer_player']]['score'] += 20
+    socketio.emit('play_sound', {'sound': 'correct'})
     next_question()
 
 @socketio.on('wrong_answer')
 def handle_wrong_answer():
     """Réponse incorrecte - reprendre le chrono"""
+    socketio.emit('play_sound', {'sound': 'wrong'})
     game_state['buzzer_pressed'] = False
     game_state['buzzer_player'] = None
     game_state['timer_paused'] = False
