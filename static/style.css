@@ -692,6 +692,13 @@ button:hover {
     font-weight: bold;
 }
 
+.no-winners {
+    font-size: 2em;
+    color: #FFD700;
+    text-align: center;
+    padding: 50px;
+}
+
 .animate-in {
     animation: slideIn 0.8s ease-out;
 }

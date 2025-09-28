@@ -180,7 +180,7 @@ def next_question():
 def reset_game_after_delay():
     """Réinitialiser le jeu après un délai"""
     import time
-    time.sleep(5)
+    time.sleep(30)
     reset_game()
 
 def reset_game():
