@@ -172,7 +172,26 @@ def next_question():
     if game_state['current_question'] >= len(game_state['questions']):
         game_state['game_finished'] = True
         socketio.emit('game_finished')
+        # Réinitialiser le système après 5 secondes
+        socketio.start_background_task(reset_game_after_delay)
     
+    socketio.emit('game_update', get_game_data())
+
+def reset_game_after_delay():
+    """Réinitialiser le jeu après un délai"""
+    import time
+    time.sleep(5)
+    reset_game()
+
+def reset_game():
+    """Réinitialiser complètement le jeu"""
+    game_state['current_question'] = 0
+    game_state['players'] = {}
+    game_state['buzzer_pressed'] = False
+    game_state['buzzer_player'] = None
+    game_state['timer_paused'] = False
+    game_state['game_finished'] = False
+    socketio.emit('game_reset')
     socketio.emit('game_update', get_game_data())
 
 def get_game_data():

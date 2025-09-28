@@ -102,6 +102,13 @@
             document.getElementById('buzzer-status').innerHTML = 
                 '🏆 Jeu terminé !<br>Consultez les résultats sur l\'écran principal.';
         });
+        
+        socket.on('game_reset', function() {
+            // Retour à l'écran de connexion
+            document.getElementById('game-screen').style.display = 'none';
+            document.getElementById('login-screen').style.display = 'block';
+            document.getElementById('player-name').value = '';
+        });
 
         // Permettre de rejoindre en appuyant sur Entrée
         document.getElementById('player-name').addEventListener('keypress', function(e) {

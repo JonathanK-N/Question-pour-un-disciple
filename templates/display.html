@@ -179,6 +179,16 @@
                 showFinalResults();
             }, 2000);
         });
+        
+        socket.on('game_reset', function() {
+            // Retour à l'écran principal
+            document.getElementById('final-results').style.display = 'none';
+            document.querySelector('.display-container').style.display = 'grid';
+            document.getElementById('question-text').textContent = 'Le jeu va bientôt commencer !';
+            document.getElementById('question-number').textContent = 'En attente...';
+            document.getElementById('buzzer-alert').textContent = '';
+            updateRanking({});
+        });
 
         function showFinalResults() {
             const sortedPlayers = Object.entries(gameData.players || {})
