@@ -160,25 +160,18 @@
         }
 
         socket.on('game_update', function(data) {
+            console.log('Game update reçu:', data);
             gameData = data;
             
             if (data.current_question) {
+                console.log('Nouvelle question:', data.current_question.question);
                 document.getElementById('question-number').textContent = 
                     `Question ${data.question_number} / ${data.total_questions}`;
                 document.getElementById('question-text').textContent = data.current_question.question;
                 
                 if (!data.timer_paused && !data.buzzer_pressed) {
+                    console.log('Démarrage du timer');
                     startTimer();
-                    // Son timer au début de la question
-                    timerAudio = document.getElementById('timer-sound');
-                    timerAudio.currentTime = 0;
-                    timerAudio.loop = true;
-                    timerAudio.play().catch(e => console.log('Son timer non disponible'));
-                } else if (data.timer_paused) {
-                    pauseTimer();
-                    if (timerAudio) {
-                        timerAudio.pause();
-                    }
                 }
             }
             
@@ -186,19 +179,11 @@
             
             if (!data.buzzer_pressed) {
                 document.getElementById('buzzer-alert').textContent = '';
-                // Reprendre le timer si pas en pause
-                if (!data.timer_paused && !isTimerRunning && savedTimer > 0) {
-                    resumeTimer();
-                    if (timerAudio && timerAudio.paused) {
-                        timerAudio.play().catch(e => {});
-                    }
-                }
             }
         });
 
-        let timerAudio = null;
-        
         socket.on('buzzer_activated', function(data) {
+            console.log('Buzzer activé par:', data.player);
             // Son buzzer
             const buzzerAudio = document.getElementById('buzzer-sound');
             buzzerAudio.currentTime = 0;
@@ -277,28 +262,44 @@
         }
 
         socket.on('play_sound', function(data) {
+            console.log('Jouer son:', data.sound);
             const audio = document.getElementById(data.sound + '-sound');
             if (audio) {
                 audio.currentTime = 0;
-                audio.play().catch(e => console.log('Son non disponible'));
+                audio.play().catch(e => console.log('Son non disponible:', e));
+            } else {
+                console.log('Audio non trouvé:', data.sound + '-sound');
             }
         });
         
         socket.on('resume_timer', function() {
+            console.log('Reprise du timer');
             resumeTimer();
-            if (timerAudio && timerAudio.paused) {
-                timerAudio.play().catch(e => {});
-            }
         });
         
         socket.on('pause_timer', function() {
-            if (timerAudio) {
-                timerAudio.pause();
-            }
+            console.log('Pause du timer');
+            pauseTimer();
         });
 
         socket.on('connect', function() {
             console.log('Écran de projection connecté');
+            const roomId = '{{ room_id or "default" }}';
+            socket.emit('join_room', {room_id: roomId});
+            
+            // Forcer la mise à jour initiale
+            setTimeout(() => {
+                socket.emit('join_room', {room_id: roomId});
+            }, 1000);
+        });
+        
+        // Debug des événements
+        socket.on('disconnect', function() {
+            console.log('Déconnecté de la projection');
+        });
+        
+        socket.on('reconnect', function() {
+            console.log('Reconnecté à la projection');
             const roomId = '{{ room_id or "default" }}';
             socket.emit('join_room', {room_id: roomId});
         });
