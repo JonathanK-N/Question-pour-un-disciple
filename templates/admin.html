@@ -269,7 +269,14 @@
 
         socket.on('connect', function() {
             console.log('Animateur connecté');
-            document.getElementById('game-url').textContent = window.location.origin + '/player';
+            const roomId = '{{ room_id or "default" }}';
+            const baseUrl = window.location.origin;
+            if (roomId === 'default') {
+                document.getElementById('game-url').textContent = baseUrl + '/player';
+            } else {
+                document.getElementById('game-url').textContent = baseUrl + '/room/' + roomId + '/player';
+            }
+            socket.emit('join_room', {room_id: roomId});
         });
     </script>
 </body>

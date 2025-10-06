@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, jsonify
-from flask_socketio import SocketIO, emit
+from flask_socketio import SocketIO, emit, join_room, leave_room
 import json
 import os
 
@@ -63,7 +63,12 @@ def player(room_id='default'):
 @socketio.on('join_player')
 def handle_join_player(data):
     """Joueur rejoint la partie"""
+    room_id = data.get('room_id', 'default')
     player_name = data.get('name', '').strip()
+    
+    # Rejoindre la salle
+    join_room(room_id)
+    game_state = get_or_create_room(room_id)
     
     # Vérifications
     if not player_name or len(player_name) > 20 or game_state['game_finished']:
@@ -79,7 +84,7 @@ def handle_join_player(data):
         game_state['players'][player_name] = {'score': 0}
     
     emit('join_success', {'name': player_name})
-    socketio.emit('game_update', get_game_data())
+    socketio.emit('game_update', get_game_data(room_id), room=room_id)
 
 @app.route('/winner')
 def winner():
@@ -96,7 +101,7 @@ def handle_join_room(data):
     emit('game_update', get_game_data(room_id))
 
 @socketio.on('connect')
-def handle_connect():
+def handle_connect(auth):
     """Connexion d'un client"""
     # Rejoindre la salle par défaut
     join_room('default')

@@ -57,7 +57,8 @@
             }
             
             playerName = name;
-            socket.emit('join_player', {name: playerName});
+            const roomId = '{{ room_id or "default" }}';
+            socket.emit('join_player', {name: playerName, room_id: roomId});
         }
         
         socket.on('join_success', function(data) {

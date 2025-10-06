@@ -220,6 +220,8 @@
 
         socket.on('connect', function() {
             console.log('Écran de projection connecté');
+            const roomId = '{{ room_id or "default" }}';
+            socket.emit('join_room', {room_id: roomId});
         });
         
         function toggleFullscreen() {
