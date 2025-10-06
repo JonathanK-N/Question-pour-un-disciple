@@ -18,10 +18,31 @@
         </header>
 
         <div class="admin-content">
+            <div class="stats-panel">
+                <h3>📊 Statistiques</h3>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-value" id="total-players">0</span>
+                        <span class="stat-label">Joueurs</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="correct-count">0</span>
+                        <span class="stat-label">Bonnes réponses</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="leader-name">-</span>
+                        <span class="stat-label">Leader</span>
+                    </div>
+                </div>
+            </div>
+            
             <div class="question-panel">
                 <h3>Question actuelle</h3>
                 <div id="current-question">Cliquez sur "Démarrer" pour commencer</div>
                 <div id="correct-answer" class="answer-display"></div>
+                <div class="progress-bar">
+                    <div id="question-progress"></div>
+                </div>
             </div>
 
             <div class="buzzer-panel">
@@ -118,15 +139,37 @@
                 document.getElementById('current-question').textContent = data.current_question.question;
                 document.getElementById('correct-answer').textContent = 
                     `Réponse: ${data.current_question.answer}`;
+                
+                // Mise à jour de la barre de progression
+                const progress = (data.question_number / data.total_questions) * 100;
+                document.getElementById('question-progress').style.width = progress + '%';
             }
 
             updatePlayersList();
+            updateStats();
             
             if (!data.buzzer_pressed) {
                 document.getElementById('buzzer-status').textContent = 'En attente...';
                 disableBuzzerControls();
             }
         });
+        
+        function updateStats() {
+            const players = gameData.players || {};
+            const playerCount = Object.keys(players).length;
+            
+            // Nombre de joueurs
+            document.getElementById('total-players').textContent = playerCount;
+            
+            // Nombre de bonnes réponses totales
+            const totalCorrect = Object.values(players).reduce((sum, player) => sum + (player.score / 20), 0);
+            document.getElementById('correct-count').textContent = totalCorrect;
+            
+            // Leader actuel
+            const sortedPlayers = Object.entries(players).sort(([,a], [,b]) => b.score - a.score);
+            const leader = sortedPlayers.length > 0 ? sortedPlayers[0][0] : '-';
+            document.getElementById('leader-name').textContent = leader;
+        }
 
         socket.on('buzzer_activated', function(data) {
             document.getElementById('buzzer-status').innerHTML = 

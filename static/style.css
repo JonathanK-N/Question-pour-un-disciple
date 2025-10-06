@@ -432,6 +432,77 @@ button:hover {
     cursor: pointer;
 }
 
+.room-selector {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 40px;
+}
+
+.room-selector h1 {
+    font-size: 3em;
+    color: #FFD700;
+    margin-bottom: 50px;
+}
+
+.room-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    max-width: 800px;
+    margin-bottom: 30px;
+}
+
+.create-room, .join-room {
+    background: rgba(255,255,255,0.1);
+    padding: 30px;
+    border-radius: 15px;
+    text-align: center;
+    border: 2px solid #FFD700;
+}
+
+.create-room h2, .join-room h2 {
+    color: #FFD700;
+    margin-bottom: 20px;
+}
+
+.create-room input, .join-room input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 1px solid #FFD700;
+    border-radius: 5px;
+    background: rgba(255,255,255,0.1);
+    color: white;
+    font-size: 1em;
+}
+
+.create-room button, .join-room button {
+    width: 100%;
+    padding: 12px;
+    background: #FFD700;
+    color: #1e3c72;
+    border: none;
+    border-radius: 5px;
+    font-size: 1.1em;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.room-info {
+    text-align: center;
+    max-width: 600px;
+    opacity: 0.8;
+}
+
+@media (max-width: 768px) {
+    .room-options {
+        grid-template-columns: 1fr;
+    }
+}
+
 /* Interface Joueur */
 .player-page {
     display: flex;
@@ -626,6 +697,86 @@ button:hover {
     border-radius: 12px;
     font-weight: bold;
     text-align: center;
+    transition: transform 0.3s ease;
+}
+
+#my-score {
+    transition: transform 0.3s ease;
+}
+
+.buzzer-btn {
+    transition: all 0.2s ease;
+}
+
+.connection-status {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 0.8em;
+    z-index: 1000;
+}
+
+.connected {
+    background: #4CAF50;
+    color: white;
+}
+
+.disconnected {
+    background: #f44336;
+    color: white;
+}
+
+.stats-panel {
+    background: rgba(255,255,255,0.1);
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    grid-column: 1 / -1;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+}
+
+.stat-item {
+    text-align: center;
+    background: rgba(0,0,0,0.2);
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid #FFD700;
+}
+
+.stat-value {
+    display: block;
+    font-size: 2em;
+    font-weight: bold;
+    color: #FFD700;
+    margin-bottom: 5px;
+}
+
+.stat-label {
+    font-size: 0.9em;
+    opacity: 0.8;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: rgba(0,0,0,0.3);
+    border-radius: 4px;
+    margin-top: 15px;
+    overflow: hidden;
+}
+
+#question-progress {
+    height: 100%;
+    background: linear-gradient(90deg, #FFD700, #FFA500);
+    width: 0%;
+    transition: width 0.5s ease;
 }
 
 .final-screen {

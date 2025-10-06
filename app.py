@@ -5,18 +5,24 @@ import os
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'quiz_secret_key'
-socketio = SocketIO(app, cors_allowed_origins="*", logger=True, engineio_logger=True)
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading', ping_timeout=60, ping_interval=25)
 
-# État du jeu
-game_state = {
-    'current_question': 0,
-    'questions': [],
-    'players': {},
-    'buzzer_pressed': False,
-    'buzzer_player': None,
-    'timer_paused': False,
-    'game_finished': False
-}
+# États des jeux par salle
+game_rooms = {}
+
+def get_or_create_room(room_id):
+    """Obtenir ou créer une salle de jeu"""
+    if room_id not in game_rooms:
+        game_rooms[room_id] = {
+            'current_question': 0,
+            'questions': [],
+            'players': {},
+            'buzzer_pressed': False,
+            'buzzer_player': None,
+            'timer_paused': False,
+            'game_finished': False
+        }
+    return game_rooms[room_id]
 
 def load_questions():
     """Charge les questions depuis le fichier JSON"""
@@ -28,30 +34,51 @@ def load_questions():
 
 @app.route('/')
 def index():
-    """Page d'accueil - sélection du rôle"""
-    return render_template('home.html')
+    """Page de sélection de salle"""
+    return render_template('room_selector.html')
+
+@app.route('/room/<room_id>')
+def room_home(room_id):
+    """Page d'accueil pour une salle spécifique"""
+    return render_template('home.html', room_id=room_id)
 
 @app.route('/display')
-def display():
+@app.route('/room/<room_id>/display')
+def display(room_id='default'):
     """Écran de projection"""
-    return render_template('display.html')
+    return render_template('display.html', room_id=room_id)
 
 @app.route('/admin')
-def admin():
+@app.route('/room/<room_id>/admin')
+def admin(room_id='default'):
     """Interface animateur"""
-    return render_template('admin.html')
+    return render_template('admin.html', room_id=room_id)
 
 @app.route('/player')
-def player():
+@app.route('/room/<room_id>/player')
+def player(room_id='default'):
     """Interface joueur"""
-    return render_template('player.html')
+    return render_template('player.html', room_id=room_id)
 
 @socketio.on('join_player')
 def handle_join_player(data):
     """Joueur rejoint la partie"""
-    player_name = data['name']
+    player_name = data.get('name', '').strip()
+    
+    # Vérifications
+    if not player_name or len(player_name) > 20 or game_state['game_finished']:
+        emit('join_error', {'message': 'Nom invalide ou jeu en cours'})
+        return
+    
+    # Empêcher les doublons pendant le jeu
+    if player_name in game_state['players'] and game_state['current_question'] > 0:
+        emit('join_error', {'message': 'Joueur déjà connecté'})
+        return
+    
     if player_name not in game_state['players']:
         game_state['players'][player_name] = {'score': 0}
+    
+    emit('join_success', {'name': player_name})
     socketio.emit('game_update', get_game_data())
 
 @app.route('/winner')
@@ -60,24 +87,43 @@ def winner():
     sorted_players = sorted(game_state['players'].items(), key=lambda x: x[1]['score'], reverse=True)
     return render_template('winner.html', players=sorted_players)
 
+@socketio.on('join_room')
+def handle_join_room(data):
+    """Rejoindre une salle spécifique"""
+    room_id = data.get('room_id', 'default')
+    join_room(room_id)
+    game_state = get_or_create_room(room_id)
+    emit('game_update', get_game_data(room_id))
+
 @socketio.on('connect')
 def handle_connect():
     """Connexion d'un client"""
-    emit('game_update', get_game_data())
+    # Rejoindre la salle par défaut
+    join_room('default')
+    emit('game_update', get_game_data('default'))
 
 @socketio.on('buzzer_press')
 def handle_buzzer(data):
     """Gestion du buzzer"""
-    if not game_state['buzzer_pressed'] and not game_state['game_finished']:
-        game_state['buzzer_pressed'] = True
-        game_state['buzzer_player'] = data['player']
-        game_state['timer_paused'] = True
-        
-        socketio.emit('buzzer_activated', {
-            'player': data['player'],
-            'play_sound': True
-        })
-        socketio.emit('game_update', get_game_data())
+    player_name = data.get('player', '').strip()
+    
+    # Vérifications de sécurité
+    if (not player_name or 
+        game_state['buzzer_pressed'] or 
+        game_state['game_finished'] or 
+        game_state['current_question'] >= len(game_state['questions']) or
+        player_name not in game_state['players']):
+        return
+    
+    game_state['buzzer_pressed'] = True
+    game_state['buzzer_player'] = player_name
+    game_state['timer_paused'] = True
+    
+    socketio.emit('buzzer_activated', {
+        'player': player_name,
+        'play_sound': True
+    })
+    socketio.emit('game_update', get_game_data())
 
 @socketio.on('correct_answer')
 def handle_correct_answer():
@@ -157,9 +203,24 @@ def save_questions():
 @socketio.on('start_game')
 def handle_start_game():
     """Démarrer le jeu"""
+    # Vérifications avant de démarrer
+    if game_state['game_finished'] == False and game_state['current_question'] > 0:
+        return  # Jeu déjà en cours
+    
+    if len(game_state['players']) == 0:
+        return  # Aucun joueur
+    
     load_questions()
+    if len(game_state['questions']) == 0:
+        return  # Aucune question
+    
     game_state['current_question'] = 0
     game_state['game_finished'] = False
+    game_state['buzzer_pressed'] = False
+    game_state['buzzer_player'] = None
+    game_state['timer_paused'] = False
+    
+    socketio.emit('game_started')
     socketio.emit('game_update', get_game_data())
 
 def next_question():
@@ -175,8 +236,9 @@ def next_question():
     
     socketio.emit('game_update', get_game_data())
 
-def get_game_data():
-    """Récupère les données actuelles du jeu"""
+def get_game_data(room_id):
+    """Récupère les données actuelles du jeu pour une salle"""
+    game_state = get_or_create_room(room_id)
     current_q = None
     if (game_state['current_question'] < len(game_state['questions']) and 
         not game_state['game_finished']):
