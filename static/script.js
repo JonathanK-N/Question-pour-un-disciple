@@ -1,6 +1,6 @@
 // Gestion du jeu côté client
 const socket = io();
-let timer = 50;
+let timer = 20;
 let timerInterval;
 let gameData = {};
 
@@ -47,7 +47,7 @@ function showAnswerButtons() {
 
 // Gestion du chrono
 function startTimer() {
-    timer = 50;
+    timer = 20;
     updateTimerDisplay();
     
     // Jouer le son du timer au début
@@ -84,7 +84,7 @@ function resumeTimer() {
 
 function updateTimerDisplay() {
     timerDisplay.textContent = timer;
-    const percentage = (timer / 50) * 100;
+    const percentage = (timer / 20) * 100;
     timerProgress.style.width = percentage + '%';
     
     // Changer la couleur selon le temps restant

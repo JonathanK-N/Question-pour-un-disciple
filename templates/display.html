@@ -12,7 +12,7 @@
         <header class="display-header">
             <h1>🏆 Question pour un Disciple 🏆</h1>
             <div class="timer-section">
-                <div id="timer">50</div>
+                <div id="timer">20</div>
                 <div class="timer-bar">
                     <div id="timer-progress"></div>
                 </div>
@@ -57,13 +57,13 @@
 
     <script>
         const socket = io();
-        let timer = 50;
+        let timer = 20;
         let timerInterval;
 
         function updateTimer(timeLeft) {
             timer = timeLeft;
             document.getElementById('timer').textContent = timer;
-            const percentage = (timer / 50) * 100;
+            const percentage = (timer / 20) * 100;
             document.getElementById('timer-progress').style.width = percentage + '%';
             
             if (timer <= 10) {
@@ -76,7 +76,7 @@
         }
 
         function startTimer() {
-            timer = 50;
+            timer = 20;
             updateTimer(timer);
             
             timerInterval = setInterval(() => {

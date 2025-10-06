@@ -13,7 +13,7 @@
             <h1>🎯 Interface Animateur</h1>
             <div class="game-status">
                 <span id="question-counter">Question 0/0</span>
-                <span id="timer-display">50s</span>
+                <span id="timer-display">20s</span>
             </div>
         </header>
 
@@ -30,6 +30,7 @@
                 <div class="buzzer-controls">
                     <button id="correct-btn" onclick="correctAnswer()" disabled>✅ Correct</button>
                     <button id="wrong-btn" onclick="wrongAnswer()" disabled>❌ Incorrect</button>
+                    <button id="skip-btn" onclick="skipQuestion()" style="display:none;">⏭️ Passer</button>
                 </div>
             </div>
 
@@ -44,7 +45,7 @@
                     <button id="start-btn" onclick="startGame()" disabled>🚀 Démarrer le jeu</button>
                 <button onclick="showQuestionManager()">📝 Gérer les questions</button>
                 </div>
-                <button id="next-btn" onclick="nextQuestion()" style="display:none;">➡️ Question suivante</button>
+
             </div>
 
             <div class="players-panel" id="game-players" style="display:none;">
@@ -75,6 +76,7 @@
             socket.emit('start_game');
             document.getElementById('pre-game').style.display = 'none';
             document.getElementById('game-players').style.display = 'block';
+            document.getElementById('skip-btn').style.display = 'inline-block';
         }
 
         function correctAnswer() {
@@ -87,7 +89,7 @@
             disableBuzzerControls();
         }
 
-        function nextQuestion() {
+        function skipQuestion() {
             socket.emit('next_question');
         }
 
