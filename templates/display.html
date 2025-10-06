@@ -119,6 +119,8 @@
         }
 
         socket.on('game_update', function(data) {
+            gameData = data;
+            
             if (data.current_question) {
                 document.getElementById('question-number').textContent = 
                     `Question ${data.question_number} / ${data.total_questions}`;
@@ -127,11 +129,15 @@
                 if (!data.timer_paused && !data.buzzer_pressed) {
                     startTimer();
                     // Son timer au début de la question
-                    const timerAudio = document.getElementById('timer-sound');
+                    timerAudio = document.getElementById('timer-sound');
                     timerAudio.currentTime = 0;
+                    timerAudio.loop = true;
                     timerAudio.play().catch(e => console.log('Son timer non disponible'));
                 } else if (data.timer_paused) {
                     pauseTimer();
+                    if (timerAudio) {
+                        timerAudio.pause();
+                    }
                 }
             }
             
@@ -139,9 +145,15 @@
             
             if (!data.buzzer_pressed) {
                 document.getElementById('buzzer-alert').textContent = '';
+                // Reprendre la musique si le timer n'est pas en pause
+                if (!data.timer_paused && timerAudio && timerAudio.paused) {
+                    timerAudio.play().catch(e => {});
+                }
             }
         });
 
+        let timerAudio = null;
+        
         socket.on('buzzer_activated', function(data) {
             // Son buzzer
             const buzzerAudio = document.getElementById('buzzer-sound');
@@ -169,6 +181,11 @@
                 }
             });
             
+            // Arrêter la musique du timer
+            if (timerAudio) {
+                timerAudio.pause();
+            }
+            
             document.getElementById('buzzer-alert').innerHTML = 
                 `🚨 <strong>${data.player}</strong> a buzzé ! 🚨`;
             pauseTimer();
@@ -176,11 +193,17 @@
 
         socket.on('game_finished', function() {
             clearInterval(timerInterval);
-            setTimeout(() => {
-                showFinalResults();
-            }, 2000);
+            if (timerAudio) {
+                timerAudio.pause();
+            }
+        });
+        
+        socket.on('show_final_results', function() {
+            showFinalResults();
         });
 
+        let gameData = {};
+        
         function showFinalResults() {
             const sortedPlayers = Object.entries(gameData.players || {})
                 .sort(([,a], [,b]) => b.score - a.score);
@@ -216,6 +239,18 @@
             if (audio) {
                 audio.currentTime = 0;
                 audio.play().catch(e => console.log('Son non disponible'));
+            }
+        });
+        
+        socket.on('resume_timer', function() {
+            if (timerAudio && timerAudio.paused) {
+                timerAudio.play().catch(e => {});
+            }
+        });
+        
+        socket.on('pause_timer', function() {
+            if (timerAudio) {
+                timerAudio.pause();
             }
         });
 

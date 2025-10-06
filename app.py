@@ -5,7 +5,7 @@ import os
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'quiz_secret_key'
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading', ping_timeout=60, ping_interval=25)
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading', ping_timeout=120, ping_interval=60, max_http_buffer_size=1000000)
 
 # États des jeux par salle
 game_rooms = {}
@@ -141,8 +141,12 @@ def handle_correct_answer(data):
     
     if game_state['buzzer_player']:
         game_state['players'][game_state['buzzer_player']]['score'] += 20
+    
     socketio.emit('play_sound', {'sound': 'correct'}, room=room_id)
-    next_question(room_id)
+    socketio.emit('pause_timer', room=room_id)
+    
+    # Attendre 3 secondes avant la question suivante
+    socketio.start_background_task(delayed_next_question, room_id, 3)
 
 @socketio.on('wrong_answer')
 def handle_wrong_answer(data):
@@ -151,6 +155,7 @@ def handle_wrong_answer(data):
     game_state = get_or_create_room(room_id)
     
     socketio.emit('play_sound', {'sound': 'wrong'}, room=room_id)
+    socketio.emit('resume_timer', room=room_id)
     game_state['buzzer_pressed'] = False
     game_state['buzzer_player'] = None
     game_state['timer_paused'] = False
@@ -160,7 +165,10 @@ def handle_wrong_answer(data):
 def handle_time_up(data):
     """Temps écoulé"""
     room_id = data.get('room_id', 'default') if data else 'default'
-    next_question(room_id)
+    
+    # Jouer le son timeout et attendre 6 secondes
+    socketio.emit('play_sound', {'sound': 'timeout'}, room=room_id)
+    socketio.start_background_task(delayed_next_question, room_id, 6)
 
 @socketio.on('get_final_results')
 def handle_get_final_results():
@@ -254,6 +262,7 @@ def next_question(room_id):
     if game_state['current_question'] >= len(game_state['questions']):
         game_state['game_finished'] = True
         socketio.emit('game_finished', room=room_id)
+        socketio.emit('show_final_results', room=room_id)
         socketio.start_background_task(reset_game_after_delay, room_id)
     
     socketio.emit('game_update', get_game_data(room_id), room=room_id)
@@ -263,6 +272,12 @@ def reset_game_after_delay(room_id):
     import time
     time.sleep(30)
     reset_game(room_id)
+
+def delayed_next_question(room_id, delay):
+    """Passer à la question suivante après un délai"""
+    import time
+    time.sleep(delay)
+    next_question(room_id)
 
 def reset_game(room_id):
     """Réinitialiser complètement le jeu"""
