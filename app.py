@@ -24,8 +24,9 @@ def get_or_create_room(room_id):
         }
     return game_rooms[room_id]
 
-def load_questions():
+def load_questions(room_id):
     """Charge les questions depuis le fichier JSON"""
+    game_state = get_or_create_room(room_id)
     try:
         with open('data/questions.json', 'r', encoding='utf-8') as f:
             game_state['questions'] = json.load(f)
@@ -110,7 +111,9 @@ def handle_connect(auth):
 @socketio.on('buzzer_press')
 def handle_buzzer(data):
     """Gestion du buzzer"""
+    room_id = data.get('room_id', 'default')
     player_name = data.get('player', '').strip()
+    game_state = get_or_create_room(room_id)
     
     # Vérifications de sécurité
     if (not player_name or 
@@ -127,30 +130,37 @@ def handle_buzzer(data):
     socketio.emit('buzzer_activated', {
         'player': player_name,
         'play_sound': True
-    })
-    socketio.emit('game_update', get_game_data())
+    }, room=room_id)
+    socketio.emit('game_update', get_game_data(room_id), room=room_id)
 
 @socketio.on('correct_answer')
-def handle_correct_answer():
+def handle_correct_answer(data):
     """Réponse correcte"""
+    room_id = data.get('room_id', 'default') if data else 'default'
+    game_state = get_or_create_room(room_id)
+    
     if game_state['buzzer_player']:
         game_state['players'][game_state['buzzer_player']]['score'] += 20
-    socketio.emit('play_sound', {'sound': 'correct'})
-    next_question()
+    socketio.emit('play_sound', {'sound': 'correct'}, room=room_id)
+    next_question(room_id)
 
 @socketio.on('wrong_answer')
-def handle_wrong_answer():
+def handle_wrong_answer(data):
     """Réponse incorrecte - reprendre le chrono"""
-    socketio.emit('play_sound', {'sound': 'wrong'})
+    room_id = data.get('room_id', 'default') if data else 'default'
+    game_state = get_or_create_room(room_id)
+    
+    socketio.emit('play_sound', {'sound': 'wrong'}, room=room_id)
     game_state['buzzer_pressed'] = False
     game_state['buzzer_player'] = None
     game_state['timer_paused'] = False
-    socketio.emit('game_update', get_game_data())
+    socketio.emit('game_update', get_game_data(room_id), room=room_id)
 
 @socketio.on('time_up')
-def handle_time_up():
+def handle_time_up(data):
     """Temps écoulé"""
-    next_question()
+    room_id = data.get('room_id', 'default') if data else 'default'
+    next_question(room_id)
 
 @socketio.on('get_final_results')
 def handle_get_final_results():
@@ -158,9 +168,10 @@ def handle_get_final_results():
     emit('final_results', game_state['players'])
 
 @socketio.on('next_question')
-def handle_next_question():
+def handle_next_question(data):
     """Passer à la question suivante manuellement"""
-    next_question()
+    room_id = data.get('room_id', 'default') if data else 'default'
+    next_question(room_id)
 
 @socketio.on('time_warning')
 def handle_time_warning():
@@ -206,8 +217,11 @@ def save_questions():
         print(f'Erreur sauvegarde: {e}')
 
 @socketio.on('start_game')
-def handle_start_game():
+def handle_start_game(data):
     """Démarrer le jeu"""
+    room_id = data.get('room_id', 'default') if data else 'default'
+    game_state = get_or_create_room(room_id)
+    
     # Vérifications avant de démarrer
     if game_state['game_finished'] == False and game_state['current_question'] > 0:
         return  # Jeu déjà en cours
@@ -215,7 +229,7 @@ def handle_start_game():
     if len(game_state['players']) == 0:
         return  # Aucun joueur
     
-    load_questions()
+    load_questions(room_id)
     if len(game_state['questions']) == 0:
         return  # Aucune question
     
@@ -225,11 +239,13 @@ def handle_start_game():
     game_state['buzzer_player'] = None
     game_state['timer_paused'] = False
     
-    socketio.emit('game_started')
-    socketio.emit('game_update', get_game_data())
+    socketio.emit('game_started', room=room_id)
+    socketio.emit('game_update', get_game_data(room_id), room=room_id)
 
-def next_question():
+def next_question(room_id):
     """Passer à la question suivante"""
+    game_state = get_or_create_room(room_id)
+    
     game_state['buzzer_pressed'] = False
     game_state['buzzer_player'] = None
     game_state['timer_paused'] = False
@@ -237,9 +253,29 @@ def next_question():
     
     if game_state['current_question'] >= len(game_state['questions']):
         game_state['game_finished'] = True
-        socketio.emit('game_finished')
+        socketio.emit('game_finished', room=room_id)
+        socketio.start_background_task(reset_game_after_delay, room_id)
     
-    socketio.emit('game_update', get_game_data())
+    socketio.emit('game_update', get_game_data(room_id), room=room_id)
+
+def reset_game_after_delay(room_id):
+    """Réinitialiser le jeu après un délai"""
+    import time
+    time.sleep(30)
+    reset_game(room_id)
+
+def reset_game(room_id):
+    """Réinitialiser complètement le jeu"""
+    game_state = get_or_create_room(room_id)
+    
+    game_state['current_question'] = 0
+    game_state['players'] = {}
+    game_state['buzzer_pressed'] = False
+    game_state['buzzer_player'] = None
+    game_state['timer_paused'] = False
+    game_state['game_finished'] = False
+    socketio.emit('game_reset', room=room_id)
+    socketio.emit('game_update', get_game_data(room_id), room=room_id)
 
 def get_game_data(room_id):
     """Récupère les données actuelles du jeu pour une salle"""

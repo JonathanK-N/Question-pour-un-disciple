@@ -89,7 +89,8 @@
                     const timeoutAudio = document.getElementById('timeout-sound');
                     timeoutAudio.currentTime = 0;
                     timeoutAudio.play().catch(e => console.log('Son timeout non disponible'));
-                    socket.emit('time_up');
+                    const roomId = '{{ room_id or "default" }}';
+                    socket.emit('time_up', {room_id: roomId});
                 }
             }, 1000);
         }

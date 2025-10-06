@@ -73,7 +73,8 @@
 
         function pressBuzzer() {
             if (canBuzz && playerName) {
-                socket.emit('buzzer_press', {player: playerName});
+                const roomId = '{{ room_id or "default" }}';
+                socket.emit('buzzer_press', {player: playerName, room_id: roomId});
                 canBuzz = false;
                 const btn = document.getElementById('buzzer-btn');
                 btn.classList.add('pressed');

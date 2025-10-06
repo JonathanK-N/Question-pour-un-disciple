@@ -94,24 +94,28 @@
         let gameData = {};
 
         function startGame() {
-            socket.emit('start_game');
+            const roomId = '{{ room_id or "default" }}';
+            socket.emit('start_game', {room_id: roomId});
             document.getElementById('pre-game').style.display = 'none';
             document.getElementById('game-players').style.display = 'block';
             document.getElementById('skip-btn').style.display = 'inline-block';
         }
 
         function correctAnswer() {
-            socket.emit('correct_answer');
+            const roomId = '{{ room_id or "default" }}';
+            socket.emit('correct_answer', {room_id: roomId});
             disableBuzzerControls();
         }
 
         function wrongAnswer() {
-            socket.emit('wrong_answer');
+            const roomId = '{{ room_id or "default" }}';
+            socket.emit('wrong_answer', {room_id: roomId});
             disableBuzzerControls();
         }
 
         function skipQuestion() {
-            socket.emit('next_question');
+            const roomId = '{{ room_id or "default" }}';
+            socket.emit('next_question', {room_id: roomId});
         }
 
         function disableBuzzerControls() {
