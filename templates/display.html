@@ -59,8 +59,8 @@
         const socket = io();
         let timer = 20;
         let timerInterval;
-        let savedTimer = 20;
-        let isTimerRunning = false;
+        let timerAudio = null;
+        let gameData = {};
 
         function updateTimer(timeLeft) {
             timer = timeLeft;
@@ -79,21 +79,28 @@
 
         function startTimer() {
             timer = 20;
-            savedTimer = 20;
             updateTimer(timer);
-            isTimerRunning = true;
+            
+            // Démarrer la musique du timer
+            timerAudio = document.getElementById('timer-sound');
+            timerAudio.currentTime = 0;
+            timerAudio.loop = true;
+            timerAudio.play().catch(e => {});
             
             timerInterval = setInterval(() => {
                 timer--;
-                savedTimer = timer;
                 updateTimer(timer);
                 
                 if (timer <= 0) {
                     clearInterval(timerInterval);
-                    isTimerRunning = false;
                     if (timerAudio) {
                         timerAudio.pause();
                     }
+                    // Jouer le son timeout
+                    const timeoutAudio = document.getElementById('timeout-sound');
+                    timeoutAudio.currentTime = 0;
+                    timeoutAudio.play().catch(e => {});
+                    
                     const roomId = '{{ room_id or "default" }}';
                     socket.emit('time_up', {room_id: roomId});
                 }
@@ -102,31 +109,34 @@
 
         function pauseTimer() {
             clearInterval(timerInterval);
-            isTimerRunning = false;
-            savedTimer = timer;
+            if (timerAudio) {
+                timerAudio.pause();
+            }
         }
         
         function resumeTimer() {
-            if (savedTimer > 0) {
-                timer = savedTimer;
-                updateTimer(timer);
-                isTimerRunning = true;
-                
+            if (timer > 0) {
                 timerInterval = setInterval(() => {
                     timer--;
-                    savedTimer = timer;
                     updateTimer(timer);
                     
                     if (timer <= 0) {
                         clearInterval(timerInterval);
-                        isTimerRunning = false;
                         if (timerAudio) {
                             timerAudio.pause();
                         }
+                        const timeoutAudio = document.getElementById('timeout-sound');
+                        timeoutAudio.currentTime = 0;
+                        timeoutAudio.play().catch(e => {});
+                        
                         const roomId = '{{ room_id or "default" }}';
                         socket.emit('time_up', {room_id: roomId});
                     }
                 }, 1000);
+                
+                if (timerAudio && timerAudio.paused) {
+                    timerAudio.play().catch(e => {});
+                }
             }
         }
 
@@ -235,8 +245,6 @@
         socket.on('show_final_results', function() {
             showFinalResults();
         });
-
-        let gameData = {};
         
         function showFinalResults() {
             const sortedPlayers = Object.entries(gameData.players || {})
