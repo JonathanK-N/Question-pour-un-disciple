@@ -61,6 +61,11 @@ def player(room_id='default'):
     """Interface joueur"""
     return render_template('player.html', room_id=room_id)
 
+@app.route('/test')
+def test_display():
+    """Page de test pour diagnostiquer SocketIO"""
+    return render_template('../test_display.html')
+
 @socketio.on('join_player')
 def handle_join_player(data):
     """Joueur rejoint la partie"""
@@ -90,8 +95,14 @@ def handle_join_player(data):
 @app.route('/winner')
 def winner():
     """Page des résultats finaux"""
-    sorted_players = sorted(game_state['players'].items(), key=lambda x: x[1]['score'], reverse=True)
-    return render_template('winner.html', players=sorted_players)
+    room_id = request.args.get('room_id', 'default')
+    game_state = get_or_create_room(room_id)
+    sorted_players = sorted(
+        game_state['players'].items(),
+        key=lambda x: x[1]['score'],
+        reverse=True
+    )
+    return render_template('winner.html', players=sorted_players, room_id=room_id)
 
 @socketio.on('join_room')
 def handle_join_room(data):
@@ -171,8 +182,10 @@ def handle_time_up(data):
     socketio.start_background_task(delayed_next_question, room_id, 6)
 
 @socketio.on('get_final_results')
-def handle_get_final_results():
+def handle_get_final_results(data):
     """Envoyer les résultats finaux"""
+    room_id = data.get('room_id', 'default') if data else 'default'
+    game_state = get_or_create_room(room_id)
     emit('final_results', game_state['players'])
 
 @socketio.on('next_question')
@@ -192,32 +205,41 @@ def handle_timer_start():
     socketio.emit('timer_start')
 
 @socketio.on('get_questions')
-def handle_get_questions():
+def handle_get_questions(data):
     """Envoyer la liste des questions"""
+    room_id = data.get('room_id', 'default') if data else 'default'
+    game_state = get_or_create_room(room_id)
     emit('questions_list', game_state['questions'])
 
 @socketio.on('add_question')
 def handle_add_question(data):
     """Ajouter une nouvelle question"""
+    room_id = data.get('room_id', 'default')
+    game_state = get_or_create_room(room_id)
+    
     new_question = {
         'question': data['question'],
         'answer': data['answer']
     }
     game_state['questions'].append(new_question)
-    save_questions()
+    save_questions(room_id)
     emit('questions_list', game_state['questions'])
 
 @socketio.on('delete_question')
 def handle_delete_question(data):
     """Supprimer une question"""
+    room_id = data.get('room_id', 'default')
+    game_state = get_or_create_room(room_id)
+    
     index = data['index']
     if 0 <= index < len(game_state['questions']):
         game_state['questions'].pop(index)
-        save_questions()
+        save_questions(room_id)
         emit('questions_list', game_state['questions'])
 
-def save_questions():
+def save_questions(room_id):
     """Sauvegarder les questions dans le fichier JSON"""
+    game_state = get_or_create_room(room_id)
     try:
         with open('data/questions.json', 'w', encoding='utf-8') as f:
             json.dump(game_state['questions'], f, ensure_ascii=False, indent=2)

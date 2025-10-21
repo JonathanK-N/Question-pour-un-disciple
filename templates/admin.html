@@ -87,7 +87,9 @@
         </div>
     </div>
 
-
+    <audio id="timer-sound" preload="auto">
+        <source src="{{ url_for('static', filename='timer.mp3') }}" type="audio/mpeg">
+    </audio>
 
     <script>
         const socket = io();
@@ -235,22 +237,25 @@
         }
         
         function loadQuestions() {
-            socket.emit('get_questions');
+            const roomId = '{{ room_id or "default" }}';
+            socket.emit('get_questions', {room_id: roomId});
         }
         
         function addQuestion() {
             const question = document.getElementById('new-question').value;
             const answer = document.getElementById('new-answer').value;
+            const roomId = '{{ room_id or "default" }}';
             
             if (question && answer) {
-                socket.emit('add_question', {question: question, answer: answer});
+                socket.emit('add_question', {question: question, answer: answer, room_id: roomId});
                 document.getElementById('new-question').value = '';
                 document.getElementById('new-answer').value = '';
             }
         }
         
         function deleteQuestion(index) {
-            socket.emit('delete_question', {index: index});
+            const roomId = '{{ room_id or "default" }}';
+            socket.emit('delete_question', {index: index, room_id: roomId});
         }
         
         socket.on('questions_list', function(questions) {

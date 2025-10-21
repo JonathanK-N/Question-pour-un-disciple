@@ -1,40 +1,40 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Écran de Projection</title>
+    <title>Ã‰cran de Projection</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
 </head>
 <body class="display-page">
     <div class="display-container">
         <header class="display-header">
-            <h1>🏆 Question pour un Disciple 🏆</h1>
+            <h1>ðŸ† Question pour un Disciple ðŸ†</h1>
             <div class="timer-section">
                 <div id="timer">20</div>
                 <div class="timer-bar">
                     <div id="timer-progress"></div>
                 </div>
             </div>
-            <button id="fullscreen-btn" onclick="toggleFullscreen()">📺 Plein écran</button>
+            <button id="fullscreen-btn" onclick="toggleFullscreen()">ðŸ“º Plein Ã©cran</button>
         </header>
 
         <main class="display-main">
             <div class="question-display">
                 <div id="question-number">En attente...</div>
-                <div id="question-text">Le jeu va bientôt commencer !</div>
+                <div id="question-text">Le jeu va bientÃ´t commencer !</div>
                 <div id="buzzer-alert"></div>
             </div>
         </main>
 
         <aside class="display-scoreboard">
-            <h2>🏅 Classement</h2>
+            <h2>ðŸ… Classement</h2>
             <div id="players-ranking"></div>
         </aside>
 
         <div id="final-results" class="final-screen" style="display:none;">
-            <h1>🎉 Résultats Finaux 🎉</h1>
+            <h1>ðŸŽ‰ RÃ©sultats Finaux ðŸŽ‰</h1>
             <div id="podium"></div>
         </div>
     </div>
@@ -78,14 +78,20 @@
         }
 
         function startTimer() {
+            clearInterval(timerInterval);
+            if (timerAudio) {
+                timerAudio.pause();
+            }
             timer = 20;
             updateTimer(timer);
             
-            // Démarrer la musique du timer
+            // DÃ©marrer la musique du timer
             timerAudio = document.getElementById('timer-sound');
-            timerAudio.currentTime = 0;
-            timerAudio.loop = true;
-            timerAudio.play().catch(e => {});
+            if (timerAudio) {
+                timerAudio.currentTime = 0;
+                timerAudio.loop = true;
+                timerAudio.play().catch(e => {});
+            }
             
             timerInterval = setInterval(() => {
                 timer--;
@@ -116,6 +122,10 @@
         
         function resumeTimer() {
             if (timer > 0) {
+                clearInterval(timerInterval);
+                if (!timerAudio) {
+                    timerAudio = document.getElementById('timer-sound');
+                }
                 timerInterval = setInterval(() => {
                     timer--;
                     updateTimer(timer);
@@ -160,7 +170,7 @@
         }
 
         socket.on('game_update', function(data) {
-            console.log('Game update reçu:', data);
+            console.log('Game update reÃ§u:', data);
             gameData = data;
             
             if (data.current_question) {
@@ -170,7 +180,7 @@
                 document.getElementById('question-text').textContent = data.current_question.question;
                 
                 if (!data.timer_paused && !data.buzzer_pressed) {
-                    console.log('Démarrage du timer');
+                    console.log('DÃ©marrage du timer');
                     startTimer();
                 }
             }
@@ -183,12 +193,12 @@
         });
 
         socket.on('buzzer_activated', function(data) {
-            console.log('Buzzer activé par:', data.player);
+            console.log('Buzzer activÃ© par:', data.player);
             // Son buzzer
             const buzzerAudio = document.getElementById('buzzer-sound');
             buzzerAudio.currentTime = 0;
             buzzerAudio.play().catch(e => {
-                // Fallback son généré
+                // Fallback son gÃ©nÃ©rÃ©
                 try {
                     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
                     const oscillator = audioContext.createOscillator();
@@ -210,13 +220,13 @@
                 }
             });
             
-            // Arrêter la musique du timer
+            // ArrÃªter la musique du timer
             if (timerAudio) {
                 timerAudio.pause();
             }
             
             document.getElementById('buzzer-alert').innerHTML = 
-                `🚨 <strong>${data.player}</strong> a buzzé ! 🚨`;
+                `ðŸš¨ <strong>${data.player}</strong> a buzzÃ© ! ðŸš¨`;
             pauseTimer();
         });
 
@@ -241,10 +251,10 @@
             const podium = document.getElementById('podium');
             podium.innerHTML = '';
             
-            const trophies = ['🥇', '🥈', '🥉'];
-            const positions = ['1er', '2ème', '3ème'];
+            const trophies = ['ðŸ¥‡', 'ðŸ¥ˆ', 'ðŸ¥‰'];
+            const positions = ['1er', '2Ã¨me', '3Ã¨me'];
             
-            // Animation séquentielle des 3 premiers
+            // Animation sÃ©quentielle des 3 premiers
             sortedPlayers.slice(0, 3).forEach(([name, data], index) => {
                 setTimeout(() => {
                     const div = document.createElement('div');
@@ -268,7 +278,7 @@
                 audio.currentTime = 0;
                 audio.play().catch(e => console.log('Son non disponible:', e));
             } else {
-                console.log('Audio non trouvé:', data.sound + '-sound');
+                console.log('Audio non trouvÃ©:', data.sound + '-sound');
             }
         });
         
@@ -283,23 +293,23 @@
         });
 
         socket.on('connect', function() {
-            console.log('Écran de projection connecté');
+            console.log('Ã‰cran de projection connectÃ©');
             const roomId = '{{ room_id or "default" }}';
             socket.emit('join_room', {room_id: roomId});
             
-            // Forcer la mise à jour initiale
+            // Forcer la mise Ã  jour initiale
             setTimeout(() => {
                 socket.emit('join_room', {room_id: roomId});
             }, 1000);
         });
         
-        // Debug des événements
+        // Debug des Ã©vÃ©nements
         socket.on('disconnect', function() {
-            console.log('Déconnecté de la projection');
+            console.log('DÃ©connectÃ© de la projection');
         });
         
         socket.on('reconnect', function() {
-            console.log('Reconnecté à la projection');
+            console.log('ReconnectÃ© Ã  la projection');
             const roomId = '{{ room_id or "default" }}';
             socket.emit('join_room', {room_id: roomId});
         });
@@ -307,18 +317,18 @@
         function toggleFullscreen() {
             if (!document.fullscreenElement) {
                 document.documentElement.requestFullscreen().catch(err => {
-                    console.log('Erreur plein écran:', err);
+                    console.log('Erreur plein Ã©cran:', err);
                 });
-                document.getElementById('fullscreen-btn').textContent = '❌ Quitter';
+                document.getElementById('fullscreen-btn').textContent = 'âŒ Quitter';
             } else {
                 document.exitFullscreen();
-                document.getElementById('fullscreen-btn').textContent = '📺 Plein écran';
+                document.getElementById('fullscreen-btn').textContent = 'ðŸ“º Plein Ã©cran';
             }
         }
         
         document.addEventListener('fullscreenchange', function() {
             if (!document.fullscreenElement) {
-                document.getElementById('fullscreen-btn').textContent = '📺 Plein écran';
+                document.getElementById('fullscreen-btn').textContent = 'ðŸ“º Plein Ã©cran';
             }
         });
     </script>

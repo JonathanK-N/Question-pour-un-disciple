@@ -39,6 +39,7 @@
 
     <script>
         const socket = io();
+        const roomId = '{{ room_id or "default" }}';
         let playerName = '';
         let canBuzz = false;
 
@@ -57,7 +58,6 @@
             }
             
             playerName = name;
-            const roomId = '{{ room_id or "default" }}';
             socket.emit('join_player', {name: playerName, room_id: roomId});
         }
         
@@ -73,7 +73,6 @@
 
         function pressBuzzer() {
             if (canBuzz && playerName) {
-                const roomId = '{{ room_id or "default" }}';
                 socket.emit('buzzer_press', {player: playerName, room_id: roomId});
                 canBuzz = false;
                 const btn = document.getElementById('buzzer-btn');
@@ -152,7 +151,7 @@
         
         socket.on('reconnect', function() {
             if (playerName) {
-                socket.emit('join_player', {name: playerName});
+                socket.emit('join_player', {name: playerName, room_id: roomId});
             }
         });
 
