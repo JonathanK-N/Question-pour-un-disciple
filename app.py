@@ -20,7 +20,8 @@ def get_or_create_room(room_id):
             'buzzer_pressed': False,
             'buzzer_player': None,
             'timer_paused': False,
-            'game_finished': False
+            'game_finished': False,
+            'game_started': False
         }
     return game_rooms[room_id]
 
@@ -86,7 +87,7 @@ def handle_join_player(data):
         socketio.emit('game_update', get_game_data(room_id), room=room_id)
         return
     
-    if game_state['current_question'] > 0 and not game_state['game_finished']:
+    if game_state['game_started'] and not game_state['game_finished']:
         emit('join_error', {'message': 'La partie est déjà en cours'})
         return
     
@@ -271,6 +272,7 @@ def handle_start_game(data):
     game_state['buzzer_pressed'] = False
     game_state['buzzer_player'] = None
     game_state['timer_paused'] = False
+    game_state['game_started'] = True
     
     for player in game_state['players'].values():
         player['score'] = 0
@@ -316,6 +318,7 @@ def reset_game(room_id):
     game_state['buzzer_player'] = None
     game_state['timer_paused'] = False
     game_state['game_finished'] = False
+    game_state['game_started'] = False
     socketio.emit('game_reset', room=room_id)
     socketio.emit('game_update', get_game_data(room_id), room=room_id)
 
@@ -335,7 +338,8 @@ def get_game_data(room_id):
         'buzzer_pressed': game_state['buzzer_pressed'],
         'buzzer_player': game_state['buzzer_player'],
         'timer_paused': game_state['timer_paused'],
-        'game_finished': game_state['game_finished']
+        'game_finished': game_state['game_finished'],
+        'game_started': game_state['game_started']
     }
 
 if __name__ == '__main__':
