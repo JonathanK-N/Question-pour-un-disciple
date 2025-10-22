@@ -192,6 +192,17 @@
             document.getElementById('buzzer-status').textContent = 'Jeu terminé !';
             alert('Le jeu est terminé ! Consultez les résultats sur l\'écran de projection.');
         });
+        
+        socket.on('game_reset', function() {
+            // Retour à l'état initial
+            document.getElementById('pre-game').style.display = 'block';
+            document.getElementById('game-players').style.display = 'none';
+            document.getElementById('buzzer-status').textContent = 'En attente...';
+            document.getElementById('current-question').textContent = 'Cliquez sur "Démarrer" pour commencer';
+            document.getElementById('correct-answer').textContent = '';
+            disableBuzzerControls();
+            updatePlayersList();
+        });
 
         socket.on('time_warning', function() {
             document.getElementById('timer-sound').play().catch(e => {});
