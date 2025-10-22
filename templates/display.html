@@ -33,7 +33,7 @@
             <div id="players-ranking"></div>
         </aside>
 
-        <div id="final-results" class="final-screen" style="display:none;">
+        <div id="final-results" class="final-screen">
             <h1>🎉 R&eacute;sultats finaux 🎉</h1>
             <div id="podium"></div>
         </div>
@@ -57,12 +57,15 @@
 
     <script>
         const socket = io();
+        const roomId = '{{ room_id or "default" }}';
         let timer = 20;
         let timerInterval;
         let timerAudio = null;
         let gameData = {};
         let currentQuestionKey = null;
         let timerActive = false;
+        let pendingFinalResultsRequest = false;
+        let finalResultsFetchAttempted = false;
         let finalResultsShown = false;
 
         function updateTimer(timeLeft) {
@@ -110,7 +113,6 @@
                     timeoutAudio.currentTime = 0;
                     timeoutAudio.play().catch(e => {});
                     
-                    const roomId = '{{ room_id or "default" }}';
                     socket.emit('time_up', {room_id: roomId});
                 }
             }, 1000);
@@ -144,7 +146,6 @@
                         timeoutAudio.currentTime = 0;
                         timeoutAudio.play().catch(e => {});
                         
-                        const roomId = '{{ room_id or "default" }}';
                         socket.emit('time_up', {room_id: roomId});
                     }
                 }, 1000);
@@ -191,16 +192,9 @@
             gameData = data;
 
             if (finalResultsShown) {
-                // Ne pas relancer le timer après l'affichage final
-            updateRanking(data.players);
-
-            if (data.game_finished && !finalResultsShown) {
-                finalResultsShown = true;
-                showFinalResults();
+                updateRanking(data.players);
                 return;
             }
-            return;
-        }
             
             if (data.current_question) {
                 const questionKey = `${data.question_number}-${data.current_question.question}`;
@@ -292,21 +286,34 @@
         });
         
         function showFinalResults() {
-            const sortedPlayers = Object.entries(gameData.players || {})
-                .sort(([,a], [,b]) => b.score - a.score);
-            
-            document.querySelector('.display-container').style.display = 'none';
             const finalSection = document.getElementById('final-results');
-            finalSection.style.display = 'flex';
+            finalSection.classList.add('visible');
+            finalSection.setAttribute('aria-hidden', 'false');
             
             const podium = document.getElementById('podium');
             podium.innerHTML = '';
 
-            const topPlayers = sortedPlayers.slice(0, 3);
-            if (topPlayers.length === 0) {
-                podium.innerHTML = `<div class="no-results">Aucun joueur à afficher</div>`;
+            const playerEntries = Object.entries(gameData.players || {});
+
+            if (playerEntries.length === 0) {
+                if (!finalResultsFetchAttempted) {
+                    finalResultsFetchAttempted = true;
+                    podium.innerHTML = `<div class="loading-results">Récupération des scores...</div>`;
+                    if (!pendingFinalResultsRequest) {
+                        pendingFinalResultsRequest = true;
+                        socket.emit('get_final_results', {room_id: roomId});
+                    }
+                } else {
+                    podium.innerHTML = `<div class="no-results">Aucun joueur à afficher</div>`;
+                }
                 return;
             }
+
+            pendingFinalResultsRequest = false;
+            finalResultsFetchAttempted = true;
+
+            const sortedPlayers = playerEntries.sort(([,a], [,b]) => b.score - a.score);
+            const topPlayers = sortedPlayers.slice(0, 3);
 
             const positions = ['1er', '2ème', '3ème'];
             const trophies = ['🥇', '🥈', '🥉'];
@@ -351,9 +358,53 @@
             pauseTimer();
         });
 
+        function hideFinalResults() {
+            const finalSection = document.getElementById('final-results');
+            finalSection.classList.remove('visible');
+            finalSection.setAttribute('aria-hidden', 'true');
+            pendingFinalResultsRequest = false;
+            finalResultsFetchAttempted = false;
+            document.getElementById('podium').innerHTML = '';
+        }
+
+        hideFinalResults();
+
+        socket.on('final_results', function(players) {
+            pendingFinalResultsRequest = false;
+            if (players && typeof players === 'object') {
+                gameData.players = players;
+                if (!finalResultsShown) {
+                    updateRanking(players);
+                }
+                if (finalResultsShown || (gameData && gameData.game_finished)) {
+                    showFinalResults();
+                }
+            }
+        });
+
+        socket.on('game_started', function() {
+            finalResultsShown = false;
+            currentQuestionKey = null;
+            timerActive = false;
+            hideFinalResults();
+            document.getElementById('question-number').textContent = 'Préparation...';
+            document.getElementById('question-text').textContent = 'Le jeu va commencer, préparez-vous !';
+            document.getElementById('buzzer-alert').textContent = '';
+        });
+
+        socket.on('game_reset', function() {
+            finalResultsShown = false;
+            currentQuestionKey = null;
+            timerActive = false;
+            hideFinalResults();
+            document.getElementById('question-number').textContent = 'En attente...';
+            document.getElementById('question-text').textContent = 'Le jeu va bientôt commencer !';
+            document.getElementById('buzzer-alert').textContent = '';
+            updateRanking({});
+        });
+
         socket.on('connect', function() {
             console.log('Écran de projection connecté');
-            const roomId = '{{ room_id or "default" }}';
             socket.emit('join_room', {room_id: roomId});
             
             // Forcer la mise à jour initiale
@@ -369,7 +420,6 @@
         
         socket.on('reconnect', function() {
             console.log('Reconnecté à la projection');
-            const roomId = '{{ room_id or "default" }}';
             socket.emit('join_room', {room_id: roomId});
         });
         

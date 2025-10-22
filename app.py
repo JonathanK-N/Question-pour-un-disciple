@@ -269,6 +269,9 @@ def handle_start_game(data):
     game_state['buzzer_player'] = None
     game_state['timer_paused'] = False
     
+    for player in game_state['players'].values():
+        player['score'] = 0
+    
     socketio.emit('game_started', room=room_id)
     socketio.emit('game_update', get_game_data(room_id), room=room_id)
 
