@@ -193,6 +193,9 @@
 
             if (finalResultsShown) {
                 updateRanking(data.players);
+                if (data.game_finished) {
+                    showFinalResults();
+                }
                 return;
             }
             
