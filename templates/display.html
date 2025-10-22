@@ -61,6 +61,8 @@
         let timerInterval;
         let timerAudio = null;
         let gameData = {};
+        let currentQuestionKey = null;
+        let timerActive = false;
 
         function updateTimer(timeLeft) {
             timer = timeLeft;
@@ -111,6 +113,7 @@
                     socket.emit('time_up', {room_id: roomId});
                 }
             }, 1000);
+            timerActive = true;
         }
 
         function pauseTimer() {
@@ -118,6 +121,7 @@
             if (timerAudio) {
                 timerAudio.pause();
             }
+            timerActive = false;
         }
         
         function resumeTimer() {
@@ -147,6 +151,7 @@
                 if (timerAudio && timerAudio.paused) {
                     timerAudio.play().catch(e => {});
                 }
+                timerActive = true;
             }
         }
 
@@ -174,15 +179,24 @@
             gameData = data;
             
             if (data.current_question) {
+                const questionKey = `${data.question_number}-${data.current_question.question}`;
+                const isNewQuestion = questionKey !== currentQuestionKey;
+
+                if (isNewQuestion) {
+                    currentQuestionKey = questionKey;
+                    console.log('DÃ©marrage du timer');
+                    startTimer();
+                } else if (!data.timer_paused && !data.buzzer_pressed && !timerActive) {
+                    console.log('Reprise du timer');
+                    resumeTimer();
+                }
+
                 console.log('Nouvelle question:', data.current_question.question);
                 document.getElementById('question-number').textContent = 
                     `Question ${data.question_number} / ${data.total_questions}`;
                 document.getElementById('question-text').textContent = data.current_question.question;
-                
-                if (!data.timer_paused && !data.buzzer_pressed) {
-                    console.log('DÃ©marrage du timer');
-                    startTimer();
-                }
+            } else {
+                currentQuestionKey = null;
             }
             
             updateRanking(data.players);
@@ -235,6 +249,8 @@
             if (timerAudio) {
                 timerAudio.pause();
             }
+            timerActive = false;
+            currentQuestionKey = null;
         });
         
         socket.on('show_final_results', function() {
