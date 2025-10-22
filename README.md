@@ -17,40 +17,6 @@
 
 <div align="center">
 
-### 🎮 **Démo Interactive Complète**
-
-<table>
-<tr>
-<td align="center" width="33%">
-
-**🎯 Console Animateur**
-<br/>
-<img src="https://via.placeholder.com/400x300/2E86AB/FFFFFF?text=Console+Animateur" alt="Console Animateur" width="100%" />
-<br/>
-<sub>Gestion complète du jeu</sub>
-
-</td>
-<td align="center" width="33%">
-
-**📱 Interface Joueur**
-<br/>
-<img src="https://via.placeholder.com/250x400/F39C12/FFFFFF?text=Interface+Joueur" alt="Interface Joueur" width="80%" />
-<br/>
-<sub>Buzzer temps réel</sub>
-
-</td>
-<td align="center" width="33%">
-
-**🖥️ Écran Projection**
-<br/>
-<img src="https://via.placeholder.com/400x250/E74C3C/FFFFFF?text=Ecran+Projection" alt="Écran Projection" width="100%" />
-<br/>
-<sub>Affichage public</sub>
-
-</td>
-</tr>
-</table>
-
 ### 🎪 **Flux de Jeu Animé**
 
 ```mermaid
