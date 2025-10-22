@@ -17,17 +17,95 @@
 
 <div align="center">
 
-### 🖥️ Interface Animateur
-<img src="static/assets/demo-admin.gif" alt="Console Animateur" width="45%" />
+### 🎮 **Démo Interactive Complète**
 
-### 📱 Interface Joueur & 🎪 Écran de Projection
-<img src="static/assets/demo-player.gif" alt="Interface Joueur" width="22%" /> <img src="static/assets/demo-display.gif" alt="Écran Projection" width="22%" />
+<table>
+<tr>
+<td align="center" width="33%">
+
+**🎯 Console Animateur**
+<br/>
+<img src="https://via.placeholder.com/400x300/2E86AB/FFFFFF?text=Console+Animateur" alt="Console Animateur" width="100%" />
+<br/>
+<sub>Gestion complète du jeu</sub>
+
+</td>
+<td align="center" width="33%">
+
+**📱 Interface Joueur**
+<br/>
+<img src="https://via.placeholder.com/250x400/F39C12/FFFFFF?text=Interface+Joueur" alt="Interface Joueur" width="80%" />
+<br/>
+<sub>Buzzer temps réel</sub>
+
+</td>
+<td align="center" width="33%">
+
+**🖥️ Écran Projection**
+<br/>
+<img src="https://via.placeholder.com/400x250/E74C3C/FFFFFF?text=Ecran+Projection" alt="Écran Projection" width="100%" />
+<br/>
+<sub>Affichage public</sub>
+
+</td>
+</tr>
+</table>
+
+### 🎪 **Flux de Jeu Animé**
+
+```mermaid
+sequenceDiagram
+    participant A as 🎯 Animateur
+    participant S as 🖥️ Serveur
+    participant J as 🎮 Joueur
+    participant E as 📺 Écran
+    
+    A->>S: Démarre question
+    S->>E: Affiche question + chrono
+    S->>J: Active buzzer
+    J->>S: Appuie buzzer 🔴
+    S->>A: Notifie premier joueur
+    A->>S: Valide réponse ✅
+    S->>E: Met à jour score
+    S->>J: Feedback instantané
+```
+
+### 🚀 **Fonctionnalités en Action**
+
+<div align="center">
+
+| 🎯 **Fonctionnalité** | ⚡ **Temps Réel** | 📱 **Mobile** | 🎪 **Visuel** |
+|:---:|:---:|:---:|:---:|
+| Buzzer instantané | ✅ Socket.IO | ✅ Responsive | ✅ Animations |
+| Chronomètre 20s | ✅ Synchronisé | ✅ Tactile | ✅ Effets sonores |
+| Classement live | ✅ Auto-update | ✅ Optimisé | ✅ Podium animé |
+| Multi-salles | ✅ Isolées | ✅ QR Code | ✅ URLs dédiées |
+
+</div>
 
 </div>
 
 ---
 
-## ⚡ Démarrage Rapide
+## 🎮 **Essayez Maintenant !**
+
+<div align="center">
+
+### 🌐 **Démo Live**
+
+[![Démo Live](https://img.shields.io/badge/🎯_Démo_Live-Essayer_Maintenant-success?style=for-the-badge&logo=rocket)](https://question-pour-un-disciple.railway.app)
+
+**Ou créez votre propre salle :**
+
+🎯 **Animateur :** `https://votre-url.com/room/VOTRE_SALLE/admin`  
+🎮 **Joueurs :** `https://votre-url.com/room/VOTRE_SALLE/player`  
+📺 **Projection :** `https://votre-url.com/room/VOTRE_SALLE/display`
+
+</div>
+
+---
+
+## ⚡ Installation Locale
 
 <details>
 <summary>🚀 <strong>Installation en 1 minute</strong></summary>
