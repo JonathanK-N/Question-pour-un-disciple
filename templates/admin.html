@@ -81,6 +81,11 @@
                     <input type="text" id="new-answer" placeholder="Réponse">
                     <button onclick="addQuestion()">➕ Ajouter</button>
                 </div>
+                <div class="import-questions">
+                    <input type="file" id="questions-file" accept="application/pdf">
+                    <button onclick="importQuestions()">📥 Importer un PDF</button>
+                    <div id="import-feedback" class="import-feedback"></div>
+                </div>
                 <div id="questions-list"></div>
                 <button onclick="hideQuestionManager()">❌ Fermer</button>
             </div>
@@ -256,6 +261,47 @@
         function deleteQuestion(index) {
             const roomId = '{{ room_id or "default" }}';
             socket.emit('delete_question', {index: index, room_id: roomId});
+        }
+
+        async function importQuestions() {
+            const fileInput = document.getElementById('questions-file');
+            const feedback = document.getElementById('import-feedback');
+            const roomId = '{{ room_id or "default" }}';
+            const importUrl = roomId === 'default'
+                ? '/import_questions'
+                : `/room/${encodeURIComponent(roomId)}/import_questions`;
+            
+            feedback.textContent = '';
+            feedback.className = 'import-feedback';
+
+            if (!fileInput.files || fileInput.files.length === 0) {
+                feedback.textContent = 'Sélectionnez un fichier PDF.';
+                feedback.classList.add('error');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            try {
+                const response = await fetch(importUrl, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json().catch(() => ({}));
+
+                if (!response.ok || !data.success) {
+                    throw new Error(data.message || 'Import impossible.');
+                }
+
+                feedback.textContent = `${data.count} question(s) importée(s).`;
+                feedback.classList.add('success');
+                fileInput.value = '';
+                loadQuestions();
+            } catch (error) {
+                feedback.textContent = error.message;
+                feedback.classList.add('error');
+            }
         }
         
         socket.on('questions_list', function(questions) {

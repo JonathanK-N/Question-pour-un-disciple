@@ -408,6 +408,34 @@ button:hover {
     color: white;
 }
 
+.import-questions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 15px;
+    align-items: center;
+}
+
+.import-questions input[type="file"] {
+    flex: 1;
+    min-width: 220px;
+    color: white;
+}
+
+.import-feedback {
+    font-size: 0.9em;
+    margin-top: 4px;
+    width: 100%;
+}
+
+.import-feedback.success {
+    color: #4CAF50;
+}
+
+.import-feedback.error {
+    color: #ff6b6b;
+}
+
 .question-item {
     display: flex;
     justify-content: space-between;
