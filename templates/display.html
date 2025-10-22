@@ -63,6 +63,7 @@
         let gameData = {};
         let currentQuestionKey = null;
         let timerActive = false;
+        let finalResultsShown = false;
 
         function updateTimer(timeLeft) {
             timer = timeLeft;
@@ -188,6 +189,18 @@
         socket.on('game_update', function(data) {
             console.log('Mise à jour du jeu:', data);
             gameData = data;
+
+            if (finalResultsShown) {
+                // Ne pas relancer le timer après l'affichage final
+            updateRanking(data.players);
+
+            if (data.game_finished && !finalResultsShown) {
+                finalResultsShown = true;
+                showFinalResults();
+                return;
+            }
+            return;
+        }
             
             if (data.current_question) {
                 const questionKey = `${data.question_number}-${data.current_question.question}`;
@@ -217,9 +230,15 @@
             if (!data.buzzer_pressed) {
                 document.getElementById('buzzer-alert').textContent = '';
             }
+
+            if (data.game_finished && !finalResultsShown) {
+                finalResultsShown = true;
+                showFinalResults();
+            }
         });
 
         socket.on('buzzer_activated', function(data) {
+            if (finalResultsShown) return;
             console.log('Buzzer activé par:', data.player);
             // Son buzzer
             const buzzerAudio = document.getElementById('buzzer-sound');
@@ -267,6 +286,8 @@
         });
         
         socket.on('show_final_results', function() {
+            if (finalResultsShown) return;
+            finalResultsShown = true;
             showFinalResults();
         });
         
@@ -275,28 +296,35 @@
                 .sort(([,a], [,b]) => b.score - a.score);
             
             document.querySelector('.display-container').style.display = 'none';
-            document.getElementById('final-results').style.display = 'flex';
+            const finalSection = document.getElementById('final-results');
+            finalSection.style.display = 'flex';
             
             const podium = document.getElementById('podium');
             podium.innerHTML = '';
-            
-            const trophies = ['🥇', '🥈', '🥉'];
+
+            const topPlayers = sortedPlayers.slice(0, 3);
+            if (topPlayers.length === 0) {
+                podium.innerHTML = `<div class="no-results">Aucun joueur à afficher</div>`;
+                return;
+            }
+
             const positions = ['1er', '2ème', '3ème'];
-            
-            // Animation séquentielle des 3 premiers
-            sortedPlayers.slice(0, 3).forEach(([name, data], index) => {
-                setTimeout(() => {
-                    const div = document.createElement('div');
-                    div.className = `podium-place place-${index + 1} animate-in`;
-                    
-                    div.innerHTML = `
-                        <div class="trophy">${trophies[index]}</div>
+            const trophies = ['🥇', '🥈', '🥉'];
+
+            topPlayers.forEach(([name, data], index) => {
+                const card = document.createElement('div');
+                card.className = `podium-place place-${index + 1}`;
+                card.style.setProperty('--delay', `${index * 0.6}s`);
+                card.innerHTML = `
+                    <div class="podium-inner">
+                        <div class="trophy">${trophies[index] || '⭐'}</div>
                         <div class="winner-name">${name}</div>
                         <div class="winner-score">${data.score} points</div>
-                        <div class="position">${positions[index]}</div>
-                    `;
-                    podium.appendChild(div);
-                }, index * 1000);
+                        <div class="position">${positions[index] || `${index + 1}ème`}</div>
+                    </div>
+                `;
+                podium.appendChild(card);
+                requestAnimationFrame(() => card.classList.add('animate-in'));
             });
         }
 
@@ -312,11 +340,13 @@
         });
         
         socket.on('resume_timer', function() {
+            if (finalResultsShown) return;
             console.log('Reprise du timer');
             resumeTimer();
         });
         
         socket.on('pause_timer', function() {
+            if (finalResultsShown) return;
             console.log('Pause du timer');
             pauseTimer();
         });
@@ -363,3 +393,5 @@
     </script>
 </body>
 </html>
+
+

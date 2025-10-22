@@ -285,7 +285,6 @@ def next_question(room_id):
         game_state['game_finished'] = True
         socketio.emit('game_finished', room=room_id)
         socketio.emit('show_final_results', room=room_id)
-        socketio.start_background_task(reset_game_after_delay, room_id)
     
     socketio.emit('game_update', get_game_data(room_id), room=room_id)
 

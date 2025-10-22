@@ -822,64 +822,88 @@ button:hover {
 #podium {
     display: flex;
     gap: 30px;
-    align-items: end;
+    align-items: flex-end;
+    justify-content: center;
+    flex-wrap: wrap;
 }
 
 .podium-place {
-    background: rgba(255,255,255,0.1);
-    padding: 30px 20px;
-    border-radius: 15px;
+    background: rgba(255,255,255,0.12);
+    padding: 30px 24px;
+    border-radius: 18px;
     text-align: center;
-    min-width: 200px;
+    min-width: 220px;
+    opacity: 0;
+    transform: translateY(40px) scale(0.95);
+    transition: transform 0.6s ease, opacity 0.6s ease;
+    border: 3px solid rgba(255,255,255,0.2);
 }
 
 .place-1 {
-    border: 3px solid #FFD700;
-    transform: scale(1.1);
+    border-color: #FFD700;
+    order: 2;
 }
 
 .place-2 {
-    border: 3px solid #C0C0C0;
+    border-color: #C0C0C0;
+    order: 1;
 }
 
 .place-3 {
-    border: 3px solid #CD7F32;
+    border-color: #CD7F32;
+    order: 3;
 }
 
 .trophy {
-    font-size: 4em;
-    margin-bottom: 15px;
+    font-size: 4.5em;
+    margin-bottom: 18px;
 }
 
 .winner-name {
-    font-size: 1.5em;
+    font-size: 1.6em;
     font-weight: bold;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
 }
 
 .winner-score {
-    font-size: 1.2em;
+    font-size: 1.3em;
     color: #FFD700;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
 }
 
 .position {
-    font-size: 1.3em;
+    font-size: 1.2em;
     font-weight: bold;
+    letter-spacing: 1px;
 }
 
-.animate-in {
-    animation: slideIn 0.8s ease-out;
+.podium-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
 }
 
-@keyframes slideIn {
+.podium-place.animate-in {
+    animation: podiumReveal 0.7s var(--delay, 0s) ease forwards;
+}
+
+.no-results {
+    background: rgba(0,0,0,0.35);
+    padding: 20px 40px;
+    border-radius: 12px;
+    font-size: 1.2em;
+    font-style: italic;
+}
+
+@keyframes podiumReveal {
     0% {
-        transform: translateY(100px) scale(0.8);
         opacity: 0;
+        transform: translateY(40px) scale(0.95);
     }
     100% {
-        transform: translateY(0) scale(1);
         opacity: 1;
+        transform: translateY(0) scale(1);
     }
 }
 
