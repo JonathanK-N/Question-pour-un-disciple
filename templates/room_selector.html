@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Créer une partie</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="room-selector">
+        <h1>🎮 Question pour un Disciple</h1>
+        
+        <div class="room-options">
+            <div class="create-room">
+                <h2>Créer une nouvelle partie</h2>
+                <input type="text" id="room-name" placeholder="Nom de la partie (ex: AfriqueQuiz)" maxlength="20">
+                <button onclick="createRoom()">🚀 Créer la partie</button>
+            </div>
+            
+            <div class="join-room">
+                <h2>Rejoindre une partie existante</h2>
+                <input type="text" id="join-room-name" placeholder="Nom de la partie à rejoindre" maxlength="20">
+                <button onclick="joinRoom()">🎯 Rejoindre</button>
+            </div>
+        </div>
+        
+        <div class="room-info">
+            <p>💡 <strong>Conseil :</strong> Partagez le nom de votre partie avec vos joueurs</p>
+            <p>🌍 Chaque partie est isolée - pas d'interférence entre les groupes</p>
+        </div>
+    </div>
+
+    <script>
+        function createRoom() {
+            const roomName = document.getElementById('room-name').value.trim();
+            if (!roomName) {
+                alert('Veuillez entrer un nom de partie');
+                return;
+            }
+            window.location.href = `/room/${encodeURIComponent(roomName)}`;
+        }
+        
+        function joinRoom() {
+            const roomName = document.getElementById('join-room-name').value.trim();
+            if (!roomName) {
+                alert('Veuillez entrer le nom de la partie');
+                return;
+            }
+            window.location.href = `/room/${encodeURIComponent(roomName)}`;
+        }
+        
+        // Permettre création avec Entrée
+        document.getElementById('room-name').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') createRoom();
+        });
+        
+        document.getElementById('join-room-name').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') joinRoom();
+        });
+    </script>
+</body>
+</html>
