@@ -1,163 +1,240 @@
-# Question pour un Disciple ✨  
+<div align="center">
 
-> Jeu de quiz biblique multi‑joueurs inspiré de *Question pour un Champion*, réalisé pour l’Église de **Jeunes Prodiges Sherbrooke – Impact Centre Chrétien Sherbrooke**.
+# 🎯 Question pour un Disciple
 
----
+<img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=22&duration=3000&pause=1000&color=2E86AB&center=true&vCenter=true&width=600&lines=Jeu+de+Quiz+Biblique+Multi-joueurs;Inspiré+de+Question+pour+un+Champion;Pour+l'Église+Jeunes+Prodiges+Sherbrooke" alt="Typing SVG" />
 
-## 🎬 Aperçu animé
-<p align="center">
-  <img src="static/assets/demo-display.gif" alt="Animation écran projection" width="70%" />
-</p>
+[![Made with Flask](https://img.shields.io/badge/Made%20with-Flask-1f425f.svg?style=for-the-badge&logo=flask)](https://flask.palletsprojects.com/)
+[![Socket.IO](https://img.shields.io/badge/Socket.IO-black?style=for-the-badge&logo=socket.io&badgeColor=010101)](https://socket.io/)
+[![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)](https://python.org)
+[![Railway](https://img.shields.io/badge/Railway-131415?style=for-the-badge&logo=railway&logoColor=white)](https://railway.app)
 
----
-
-## 📌 Présentation du projet
-
-| Détail | Description |
-| :-- | :-- |
-| **Créateur** | Jonathan Kakesa Nayaba – CEO, Cognito Inc. |
-| **Contact** | ✉️ cognito943@gmail.com · 🌐 [cognito-inc.ca](https://cognito-inc.ca) |
-| **Réseaux** | [GitHub](https://github.com/JonathanK-N) · [Facebook](https://www.facebook.com/) |
-| **Création** | Septembre 2024 |
-| **Temps de développement** | ~ 120 h (design, back-end, front-end & QA) |
-| **Technologies** | Flask · Flask-SocketIO · PyPDF2 · HTML/CSS · Vanilla JS |
-| **Hébergement** | Railway |
+</div>
 
 ---
 
-## 🚀 Fonctionnalités phares
+## 🎬 Aperçu du Projet
 
-- **Gestion multi-salles** : animateur, joueurs, écran de projection sur des URLs dédiées.  
-- **Buzzers en temps réel** : Socket.IO gère le premier appui et verrouille les autres.  
-- **Chrono dynamique** : 20 secondes avec sons, pause et reprise automatiques.  
-- **Classement live + podium animé** : affichage final du top 3 avec animation séquentielle.  
-- **Console animateur complète** :
-  - démarrage/arrêt, validation des réponses ;
-  - gestion du chronomètre et du buzzer ;
-  - ajout/suppression de questions ;
-  - **import PDF** : l’animateur charge ses questionnaires (format Q/R) pour enrichir la base.
-- **Expérience joueur** : interface mobile, feedback instantané, score actualisé en direct.  
-- **Résilience** : reconnexion transparente des joueurs (nom identique ⇒ reprise automatique).  
+<div align="center">
+
+### 🖥️ Interface Animateur
+<img src="static/assets/demo-admin.gif" alt="Console Animateur" width="45%" />
+
+### 📱 Interface Joueur & 🎪 Écran de Projection
+<img src="static/assets/demo-player.gif" alt="Interface Joueur" width="22%" /> <img src="static/assets/demo-display.gif" alt="Écran Projection" width="22%" />
+
+</div>
 
 ---
 
-## 🧰 Installation & lancement
+## ⚡ Démarrage Rapide
+
+<details>
+<summary>🚀 <strong>Installation en 1 minute</strong></summary>
 
 ```bash
-# 1. Cloner le dépôt
+# 📥 Cloner le projet
 git clone https://github.com/JonathanK-N/question-pour-un-disciple.git
 cd question-pour-un-disciple
 
-# 2. Créer l'environnement Python (recommandé)
+# 🐍 Environnement Python
 python -m venv .venv
-source .venv/bin/activate  # (Windows) .venv\Scripts\activate
+.venv\Scripts\activate  # Windows
+# source .venv/bin/activate  # Linux/Mac
 
-# 3. Installer les dépendances
+# 📦 Dépendances
 pip install -r requirements.txt
 
-# 4. Démarrer l'application
+# 🎮 Lancement
 python app.py
 ```
 
-Par défaut, l’application écoute sur `http://0.0.0.0:5000` (Railway/Heroku compatible).  
-En local, ouvrir `http://localhost:5000`.
+**🌐 Accès :** `http://localhost:5000`
+
+</details>
 
 ---
 
-## 🧑‍💼 Rôles & interfaces
+## 🎯 Fonctionnalités Principales
 
-| Rôle | URL | Description |
-| :-- | :-- | :-- |
-| **Animateur** | `/room/<nom>/admin` | Gère joueurs, questions, chrono, validations. Import PDF possible. |
-| **Joueur** | `/room/<nom>/player` | Saisit son nom, voit son score, buzzer responsive. |
-| **Écran projection** | `/room/<nom>/display` | Vue publique : question actuelle, chrono, classement, podium. |
+<table>
+<tr>
+<td width="50%">
 
-> **Astuce :** changer `<nom>` pour créer plusieurs salles isolées (ex. `/room/sherbrooke`).
+### 🎮 **Gameplay Temps Réel**
+- 🔴 **Buzzers instantanés** avec Socket.IO
+- ⏱️ **Chronomètre 20s** avec effets sonores
+- 🏆 **Classement live** et podium animé
+- 🔄 **Reconnexion automatique** des joueurs
+
+</td>
+<td width="50%">
+
+### 🛠️ **Gestion Avancée**
+- 👨💼 **Console animateur** complète
+- 📄 **Import PDF** de questionnaires
+- 🏠 **Multi-salles** isolées
+- 📱 **Interface mobile** responsive
+
+</td>
+</tr>
+</table>
 
 ---
 
-## 📝 Format d’import PDF
+## 🎭 Rôles & Interfaces
 
-Le module d’import attend des questions structurées dans le document PDF :
+<div align="center">
 
+| 👤 **Rôle** | 🔗 **URL** | 📝 **Description** |
+|:---:|:---:|:---|
+| 🎯 **Animateur** | `/room/<nom>/admin` | Console de contrôle complète |
+| 🎮 **Joueur** | `/room/<nom>/player` | Interface de jeu mobile |
+| 🖥️ **Projection** | `/room/<nom>/display` | Écran public pour audience |
+
+</div>
+
+> 💡 **Astuce :** Remplacez `<nom>` par votre salle (ex: `/room/sherbrooke`)
+
+---
+
+## 📊 Architecture Technique
+
+<details>
+<summary>🏗️ <strong>Stack Technologique</strong></summary>
+
+```mermaid
+graph TB
+    A[Client Web] --> B[Flask Server]
+    B --> C[Socket.IO]
+    B --> D[PyPDF2]
+    B --> E[JSON Database]
+    C --> F[Real-time Events]
+    D --> G[PDF Import]
+    E --> H[Questions Storage]
 ```
-Question: Qui a écrit l’Apocalypse ?
-Réponse: L’apôtre Jean
 
-Question 2 - Quel est le premier miracle de Jésus ?
-Réponse 2: L’eau changée en vin à Cana
-```
+**Technologies :**
+- 🐍 **Backend :** Flask + Flask-SocketIO
+- 🎨 **Frontend :** HTML5 + CSS3 + Vanilla JS
+- 📄 **PDF :** PyPDF2 pour l'import
+- 💾 **Data :** JSON persistant
+- 🚀 **Deploy :** Railway compatible
 
-Le parseur accepte :
-- préfixes `Question`, `Question 1`, `Q:` (insensible à la casse) ;
-- préfixes `Réponse`, `Reponse`, `Answer`.
-
-Chaque paire question/réponse devient un élément dans `data/questions.json` et est immédiatement visible dans le panneau animateur.
+</details>
 
 ---
 
-## 🗂️ Arborescence (extrait)
+## 📁 Structure du Projet
+
+<details>
+<summary>🗂️ <strong>Arborescence détaillée</strong></summary>
 
 ```
 question-pour-un-disciple/
-├── app.py                # Flask + Socket.IO + routes d’import PDF
-├── requirements.txt      # Dépendances (Flask, SocketIO, PyPDF2…)
-├── data/
-│   └── questions.json    # Base de questions persistante
-├── static/
-│   ├── script.js         # Logique client admin initiale
-│   ├── style.css         # Thème bleu/or
-│   ├── buzzer.mp3 …
-│   └── assets/           # (À créer) GIFs/visuels README
-└── templates/
-    ├── admin.html        # Console animateur
-    ├── display.html      # Podium & écran public
-    ├── player.html       # Interface joueur
-    └── ...               # Pages auxiliaires
+├── 🐍 app.py                 # Serveur Flask principal
+├── 📋 requirements.txt       # Dépendances Python
+├── 📊 data/
+│   └── 📝 questions.json     # Base de données questions
+├── 🎨 static/
+│   ├── 📜 script.js          # Logique client
+│   ├── 🎨 style.css          # Styles CSS
+│   ├── 🔊 buzzer.mp3         # Effets sonores
+│   └── 🖼️ assets/           # Images & GIFs
+└── 📄 templates/
+    ├── 👨💼 admin.html         # Console animateur
+    ├── 🖥️ display.html        # Écran projection
+    ├── 🎮 player.html         # Interface joueur
+    └── 🏠 index.html          # Page d'accueil
 ```
 
----
-
-## 🔧 Scripts utiles
-
-| Commande | Description |
-| :-- | :-- |
-| `python app.py` | Lancer le serveur en développement. |
-| `pip install -r requirements.txt` | Installer/mettre à jour les dépendances. |
-| `python -m venv .venv` | Créer un environnement virtuel Python. |
+</details>
 
 ---
 
-## 🛠️ Roadmap envisagée
+## 📄 Import PDF
 
-- [ ] Mode “série éliminatoire” (Top 16 → Top 8 → Finale).  
-- [ ] Éditeur web de questionnaires avec export PDF.  
-- [ ] Integration scoreboard Chromecast / OBS.  
-- [ ] Traduction complète en anglais & espagnol.  
+<details>
+<summary>📋 <strong>Format des questionnaires</strong></summary>
+
+**Structure attendue :**
+```
+Question: Qui a écrit l'Apocalypse ?
+Réponse: L'apôtre Jean
+
+Question 2 - Quel est le premier miracle de Jésus ?
+Réponse 2: L'eau changée en vin à Cana
+```
+
+**Formats acceptés :**
+- ✅ `Question:` / `Q:` / `Question 1`
+- ✅ `Réponse:` / `Reponse:` / `Answer:`
+- ✅ Insensible à la casse
+
+</details>
 
 ---
 
-## 👨‍💻 Auteur
+## 🛣️ Roadmap
 
-> **Jonathan Kakesa Nayaba**  
-> CEO – Cognito Inc.  
-> Créateur de solutions numériques pour la communauté chrétienne francophone.
+- [ ] 🏆 Mode tournoi éliminatoire
+- [ ] ✏️ Éditeur web de questions
+- [ ] 📺 Intégration OBS/Chromecast
+- [ ] 🌍 Support multilingue
+- [ ] 📈 Statistiques avancées
+- [ ] 🎵 Thèmes musicaux
 
-- 🌐 [cognito-inc.ca](https://cognito-inc.ca)  
-- 📧 cognito943@gmail.com  
-- 🐙 [github.com/JonathanK-N](https://github.com/JonathanK-N)  
-- 👍 [facebook.com](https://www.facebook.com/)
+---
+
+## 👨💻 Créateur
+
+<div align="center">
+
+<img src="https://github.com/JonathanK-N.png" width="100" style="border-radius: 50%;" />
+
+**Jonathan Kakesa Nayaba**  
+*CEO - Cognito Inc.*
+
+[![Website](https://img.shields.io/badge/Website-cognito--inc.ca-blue?style=flat-square&logo=google-chrome)](https://cognito-inc.ca)
+[![Email](https://img.shields.io/badge/Email-cognito943%40gmail.com-red?style=flat-square&logo=gmail)](mailto:cognito943@gmail.com)
+[![GitHub](https://img.shields.io/badge/GitHub-JonathanK--N-black?style=flat-square&logo=github)](https://github.com/JonathanK-N)
+
+*Créateur de solutions numériques pour la communauté chrétienne francophone*
+
+</div>
+
+---
+
+## 📈 Statistiques du Projet
+
+<div align="center">
+
+![GitHub repo size](https://img.shields.io/github/repo-size/JonathanK-N/question-pour-un-disciple?style=for-the-badge)
+![GitHub last commit](https://img.shields.io/github/last-commit/JonathanK-N/question-pour-un-disciple?style=for-the-badge)
+![GitHub issues](https://img.shields.io/github/issues/JonathanK-N/question-pour-un-disciple?style=for-the-badge)
+
+**⏱️ Temps de développement :** ~120 heures  
+**📅 Création :** Septembre 2024  
+**🎯 Objectif :** Édifier la communauté chrétienne
+
+</div>
 
 ---
 
 ## 🙏 Remerciements
 
-Merci à toute l’équipe **Jeunes Prodiges Sherbrooke** pour la vision, les tests et l’énergie communiquée tout au long du développement. Ce jeu est pensé pour édifier, connecter et célébrer la connaissance de la Parole au sein de l’Église.
+<div align="center">
+
+**Merci à l'équipe Jeunes Prodiges Sherbrooke**  
+*Pour la vision, les tests et l'énergie communiquée*
+
+<img src="static/assets/logo-icc-sherbrooke.png" alt="Impact Centre Chrétien Sherbrooke" width="150" />
+
+*"À Celui qui est puissant pour faire infiniment au-delà de tout ce que nous demandons ou pensons."*  
+**— Éphésiens 3:20**
 
 ---
 
-<p align="center">
-  <img src="static/assets/logo-icc-sherbrooke.png" alt="Impact Centre Chrétien Sherbrooke" width="180" />
-  <br/><i>“À Celui qui est puissant pour faire infiniment au-delà de tout ce que nous demandons ou pensons.”</i> – Éphésiens 3:20
-</p>
+⭐ **N'oubliez pas de mettre une étoile si ce projet vous plaît !** ⭐
 
+</div>
