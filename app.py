@@ -312,6 +312,8 @@ def handle_get_questions(data):
     """Envoyer la liste des questions"""
     room_id = data.get('room_id', 'default') if data else 'default'
     game_state = get_or_create_room(room_id)
+    if not game_state['questions']:
+        load_questions(room_id)
     emit('questions_list', game_state['questions'])
 
 @socketio.on('add_question')
