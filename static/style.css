@@ -681,9 +681,20 @@ button:hover {
     background: rgba(255,215,0,0.1);
 }
 
+.rank-2 {
+    border-left-color: #C0C0C0;
+    background: rgba(192,192,192,0.12);
+}
+
+.rank-3 {
+    border-left-color: #CD7F32;
+    background: rgba(205,127,50,0.12);
+}
+
 .rank-number {
     font-weight: bold;
     font-size: 1.2em;
+    text-align: center;
 }
 
 .player-name {
@@ -698,6 +709,15 @@ button:hover {
     font-weight: bold;
     text-align: center;
     transition: transform 0.3s ease;
+}
+
+.player-rank.empty-state {
+    display: flex;
+    justify-content: center;
+    border-left-color: rgba(255, 255, 255, 0.2);
+    background: rgba(0,0,0,0.15);
+    font-style: italic;
+    color: rgba(255,255,255,0.8);
 }
 
 #my-score {

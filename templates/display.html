@@ -3,38 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ã‰cran de Projection</title>
+    <title>&Eacute;cran de projection</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
 </head>
 <body class="display-page">
     <div class="display-container">
         <header class="display-header">
-            <h1>ðŸ† Question pour un Disciple ðŸ†</h1>
+            <h1>🏆 Question pour un Disciple 🏆</h1>
             <div class="timer-section">
                 <div id="timer">20</div>
                 <div class="timer-bar">
                     <div id="timer-progress"></div>
                 </div>
             </div>
-            <button id="fullscreen-btn" onclick="toggleFullscreen()">ðŸ“º Plein Ã©cran</button>
+            <button id="fullscreen-btn" onclick="toggleFullscreen()">📺 Plein &eacute;cran</button>
         </header>
 
         <main class="display-main">
             <div class="question-display">
                 <div id="question-number">En attente...</div>
-                <div id="question-text">Le jeu va bientÃ´t commencer !</div>
+                <div id="question-text">Le jeu va bientôt commencer&nbsp;!</div>
                 <div id="buzzer-alert"></div>
             </div>
         </main>
 
         <aside class="display-scoreboard">
-            <h2>ðŸ… Classement</h2>
+            <h2>📊 Classement en direct</h2>
             <div id="players-ranking"></div>
         </aside>
 
         <div id="final-results" class="final-screen" style="display:none;">
-            <h1>ðŸŽ‰ RÃ©sultats Finaux ðŸŽ‰</h1>
+            <h1>🎉 R&eacute;sultats finaux 🎉</h1>
             <div id="podium"></div>
         </div>
     </div>
@@ -87,7 +87,7 @@
             timer = 20;
             updateTimer(timer);
             
-            // DÃ©marrer la musique du timer
+            // Démarrer la musique du timer
             timerAudio = document.getElementById('timer-sound');
             if (timerAudio) {
                 timerAudio.currentTime = 0;
@@ -156,26 +156,37 @@
         }
 
         function updateRanking(players) {
+            const ranking = document.getElementById('players-ranking');
             const sortedPlayers = Object.entries(players || {})
                 .sort(([,a], [,b]) => b.score - a.score);
+
+            if (sortedPlayers.length === 0) {
+                ranking.innerHTML = `
+                    <div class="player-rank empty-state">
+                        <span class="player-name">Aucun joueur pour le moment</span>
+                    </div>
+                `;
+                return;
+            }
             
-            const ranking = document.getElementById('players-ranking');
             ranking.innerHTML = '';
+            const medals = ['🥇', '🥈', '🥉'];
             
             sortedPlayers.forEach(([name, data], index) => {
                 const div = document.createElement('div');
                 div.className = `player-rank rank-${index + 1}`;
+                const badge = medals[index] || '⭐';
                 div.innerHTML = `
-                    <span class="rank-number">${index + 1}</span>
+                    <span class="rank-number">${badge}</span>
                     <span class="player-name">${name}</span>
-                    <span class="player-score">${data.score}</span>
+                    <span class="player-score">${data.score} pts</span>
                 `;
                 ranking.appendChild(div);
             });
         }
 
         socket.on('game_update', function(data) {
-            console.log('Game update reÃ§u:', data);
+            console.log('Mise à jour du jeu:', data);
             gameData = data;
             
             if (data.current_question) {
@@ -184,7 +195,7 @@
 
                 if (isNewQuestion) {
                     currentQuestionKey = questionKey;
-                    console.log('DÃ©marrage du timer');
+                    console.log('Démarrage du timer');
                     startTimer();
                 } else if (!data.timer_paused && !data.buzzer_pressed && !timerActive) {
                     console.log('Reprise du timer');
@@ -197,6 +208,8 @@
                 document.getElementById('question-text').textContent = data.current_question.question;
             } else {
                 currentQuestionKey = null;
+                document.getElementById('question-number').textContent = 'En attente...';
+                document.getElementById('question-text').textContent = 'Préparation de la prochaine question';
             }
             
             updateRanking(data.players);
@@ -207,12 +220,12 @@
         });
 
         socket.on('buzzer_activated', function(data) {
-            console.log('Buzzer activÃ© par:', data.player);
+            console.log('Buzzer activé par:', data.player);
             // Son buzzer
             const buzzerAudio = document.getElementById('buzzer-sound');
             buzzerAudio.currentTime = 0;
             buzzerAudio.play().catch(e => {
-                // Fallback son gÃ©nÃ©rÃ©
+                // Fallback son généré
                 try {
                     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
                     const oscillator = audioContext.createOscillator();
@@ -234,13 +247,13 @@
                 }
             });
             
-            // ArrÃªter la musique du timer
+            // Arrêter la musique du timer
             if (timerAudio) {
                 timerAudio.pause();
             }
             
             document.getElementById('buzzer-alert').innerHTML = 
-                `ðŸš¨ <strong>${data.player}</strong> a buzzÃ© ! ðŸš¨`;
+                `🚨 <strong>${data.player}</strong> a buzzé ! 🚨`;
             pauseTimer();
         });
 
@@ -267,10 +280,10 @@
             const podium = document.getElementById('podium');
             podium.innerHTML = '';
             
-            const trophies = ['ðŸ¥‡', 'ðŸ¥ˆ', 'ðŸ¥‰'];
-            const positions = ['1er', '2Ã¨me', '3Ã¨me'];
+            const trophies = ['🥇', '🥈', '🥉'];
+            const positions = ['1er', '2ème', '3ème'];
             
-            // Animation sÃ©quentielle des 3 premiers
+            // Animation séquentielle des 3 premiers
             sortedPlayers.slice(0, 3).forEach(([name, data], index) => {
                 setTimeout(() => {
                     const div = document.createElement('div');
@@ -294,7 +307,7 @@
                 audio.currentTime = 0;
                 audio.play().catch(e => console.log('Son non disponible:', e));
             } else {
-                console.log('Audio non trouvÃ©:', data.sound + '-sound');
+                console.log('Audio non trouvé:', data.sound + '-sound');
             }
         });
         
@@ -309,23 +322,23 @@
         });
 
         socket.on('connect', function() {
-            console.log('Ã‰cran de projection connectÃ©');
+            console.log('Écran de projection connecté');
             const roomId = '{{ room_id or "default" }}';
             socket.emit('join_room', {room_id: roomId});
             
-            // Forcer la mise Ã  jour initiale
+            // Forcer la mise à jour initiale
             setTimeout(() => {
                 socket.emit('join_room', {room_id: roomId});
             }, 1000);
         });
         
-        // Debug des Ã©vÃ©nements
+        // Debug des évènements
         socket.on('disconnect', function() {
-            console.log('DÃ©connectÃ© de la projection');
+            console.log('Déconnecté de la projection');
         });
         
         socket.on('reconnect', function() {
-            console.log('ReconnectÃ© Ã  la projection');
+            console.log('Reconnecté à la projection');
             const roomId = '{{ room_id or "default" }}';
             socket.emit('join_room', {room_id: roomId});
         });
@@ -333,18 +346,18 @@
         function toggleFullscreen() {
             if (!document.fullscreenElement) {
                 document.documentElement.requestFullscreen().catch(err => {
-                    console.log('Erreur plein Ã©cran:', err);
+                    console.log('Erreur plein écran:', err);
                 });
-                document.getElementById('fullscreen-btn').textContent = 'âŒ Quitter';
+                document.getElementById('fullscreen-btn').textContent = '❌ Quitter';
             } else {
                 document.exitFullscreen();
-                document.getElementById('fullscreen-btn').textContent = 'ðŸ“º Plein Ã©cran';
+                document.getElementById('fullscreen-btn').textContent = '📺 Plein écran';
             }
         }
         
         document.addEventListener('fullscreenchange', function() {
             if (!document.fullscreenElement) {
-                document.getElementById('fullscreen-btn').textContent = 'ðŸ“º Plein Ã©cran';
+                document.getElementById('fullscreen-btn').textContent = '📺 Plein écran';
             }
         });
     </script>
