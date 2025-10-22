@@ -2,6 +2,9 @@ from flask import Flask, render_template, request, jsonify
 from flask_socketio import SocketIO, emit, join_room, leave_room
 import json
 import os
+import io
+import re
+from PyPDF2 import PdfReader
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'quiz_secret_key'
@@ -24,6 +27,102 @@ def get_or_create_room(room_id):
             'game_started': False
         }
     return game_rooms[room_id]
+
+
+def _extract_questions_from_text(text):
+    """Parse a raw text blob into question/answer pairs."""
+    questions = []
+    question_pattern = re.compile(r'^(?:q|question)\s*\d*\s*[:\-\.]?\s*(.*)', re.IGNORECASE)
+    answer_pattern = re.compile(r'^(?:r|réponse|reponse|answer)\s*\d*\s*[:\-\.]?\s*(.*)', re.IGNORECASE)
+
+    current = None
+    for raw_line in text.splitlines():
+        line = raw_line.strip()
+        if not line:
+            continue
+
+        q_match = question_pattern.match(line)
+        a_match = answer_pattern.match(line)
+
+        if q_match:
+            if current and 'question' in current and 'answer' in current:
+                questions.append(current)
+            current = {'question': q_match.group(1).strip()}
+            continue
+
+        if a_match and current:
+            current['answer'] = a_match.group(1).strip()
+            if current['question'] and current['answer']:
+                questions.append(current)
+                current = None
+            continue
+
+        if current and 'answer' not in current:
+            current['question'] = f"{current['question']} {line}".strip()
+        elif current and 'answer' in current:
+            current['answer'] = f"{current['answer']} {line}".strip()
+
+    if current and 'question' in current and 'answer' in current:
+        questions.append(current)
+
+    if questions:
+        return questions
+
+    # Fallback - split into paragraphs and take first line as question, rest as answer
+    paragraphs = [block.strip() for block in re.split(r'\n\s*\n', text) if block.strip()]
+    for block in paragraphs:
+        lines = [ln.strip() for ln in block.splitlines() if ln.strip()]
+        if len(lines) >= 2:
+            question = lines[0]
+            answer = " ".join(lines[1:]).strip()
+            if question and answer:
+                questions.append({'question': question, 'answer': answer})
+    return questions
+
+
+def parse_pdf_questions(file_storage):
+    """Read an uploaded PDF file and return a list of dict(question, answer)."""
+    try:
+        file_bytes = io.BytesIO(file_storage.read())
+        reader = PdfReader(file_bytes)
+    except Exception as exc:
+        raise ValueError(f"Impossible de lire le PDF ({exc})")
+
+    extracted_pages = []
+    for page in reader.pages:
+        try:
+            page_text = page.extract_text()
+        except Exception:
+            page_text = None
+        if page_text:
+            extracted_pages.append(page_text)
+
+    if not extracted_pages:
+        raise ValueError("Le PDF ne contient pas de texte exploitable.")
+
+    full_text = "\n".join(extracted_pages)
+    questions = _extract_questions_from_text(full_text)
+
+    if not questions:
+        raise ValueError(
+            "Aucune question détectée. Utilisez un format contenant des lignes "
+            "'Question: ...' et 'Réponse: ...' ou des blocs question/réponse."
+        )
+
+    # Nettoyage final (suppression des doublons et trim)
+    cleaned = []
+    seen = set()
+    for item in questions:
+        question = item.get('question', '').strip()
+        answer = item.get('answer', '').strip()
+        if not question or not answer:
+            continue
+        key = (question.lower(), answer.lower())
+        if key in seen:
+            continue
+        seen.add(key)
+        cleaned.append({'question': question, 'answer': answer})
+    return cleaned
 
 def load_questions(room_id):
     """Charge les questions depuis le fichier JSON"""
@@ -213,6 +312,8 @@ def handle_get_questions(data):
     """Envoyer la liste des questions"""
     room_id = data.get('room_id', 'default') if data else 'default'
     game_state = get_or_create_room(room_id)
+    if not game_state['questions']:
+        load_questions(room_id)
     emit('questions_list', game_state['questions'])
 
 @socketio.on('add_question')
@@ -250,6 +351,31 @@ def save_questions(room_id):
     except Exception as e:
         print(f'Erreur sauvegarde: {e}')
 
+
+def _import_questions_for_room(room_id):
+    file = request.files.get('file')
+    if not file:
+        return jsonify({'success': False, 'message': 'Aucun fichier reçu'}), 400
+
+    load_questions(room_id)
+    try:
+        new_questions = parse_pdf_questions(file)
+    except ValueError as exc:
+        return jsonify({'success': False, 'message': str(exc)}), 400
+    except Exception as exc:  # pragma: no cover - unexpected errors
+        print(f'Erreur lors de l\'import PDF: {exc}')
+        return jsonify({'success': False, 'message': 'Erreur lors de l\'importation du fichier'}), 500
+
+    if not new_questions:
+        return jsonify({'success': False, 'message': 'Aucune question à ajouter.'}), 400
+
+    game_state = get_or_create_room(room_id)
+    game_state['questions'].extend(new_questions)
+    save_questions(room_id)
+
+    socketio.emit('questions_list', game_state['questions'], room=room_id)
+    return jsonify({'success': True, 'count': len(new_questions)})
+
 @socketio.on('start_game')
 def handle_start_game(data):
     """Démarrer le jeu"""
@@ -279,6 +405,17 @@ def handle_start_game(data):
     
     socketio.emit('game_started', room=room_id)
     socketio.emit('game_update', get_game_data(room_id), room=room_id)
+
+
+@app.route('/import_questions', methods=['POST'])
+def import_questions_default():
+    return _import_questions_for_room('default')
+
+
+@app.route('/room/<room_id>/import_questions', methods=['POST'])
+def import_questions_room(room_id):
+    return _import_questions_for_room(room_id)
+
 
 def next_question(room_id):
     """Passer à la question suivante"""
