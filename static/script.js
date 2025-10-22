@@ -1,8 +1,10 @@
 // Gestion du jeu côté client
 const socket = io();
-let timer = 50;
+let timer = 20;
 let timerInterval;
 let gameData = {};
+let currentQuestionKey = null;
+let timerActive = false;
 
 // Éléments DOM
 const timerDisplay = document.getElementById('timer');
@@ -47,7 +49,7 @@ function showAnswerButtons() {
 
 // Gestion du chrono
 function startTimer() {
-    timer = 50;
+    timer = 20;
     updateTimerDisplay();
     
     // Jouer le son du timer au début
@@ -62,14 +64,17 @@ function startTimer() {
             socket.emit('time_up');
         }
     }, 1000);
+    timerActive = true;
 }
 
 function pauseTimer() {
     clearInterval(timerInterval);
+    timerActive = false;
 }
 
 function resumeTimer() {
     if (timer > 0) {
+        clearInterval(timerInterval);
         timerInterval = setInterval(() => {
             timer--;
             updateTimerDisplay();
@@ -79,12 +84,13 @@ function resumeTimer() {
                 socket.emit('time_up');
             }
         }, 1000);
+        timerActive = true;
     }
 }
 
 function updateTimerDisplay() {
     timerDisplay.textContent = timer;
-    const percentage = (timer / 50) * 100;
+    const percentage = (timer / 20) * 100;
     timerProgress.style.width = percentage + '%';
     
     // Changer la couleur selon le temps restant
@@ -120,15 +126,23 @@ socket.on('game_update', function(data) {
     gameData = data;
     
     if (data.current_question) {
-        questionNumber.textContent = `Question ${data.question_number}/${data.total_questions}`;
-        questionText.textContent = data.current_question.question;
-        
-        // Démarrer le chrono si ce n'est pas en pause
-        if (!data.timer_paused && !data.buzzer_pressed) {
+        const questionKey = `${data.question_number}-${data.current_question.question}`;
+        const isNewQuestion = questionKey !== currentQuestionKey;
+
+        if (isNewQuestion) {
+            currentQuestionKey = questionKey;
             startTimer();
-        } else if (data.timer_paused) {
+        } else if (!data.timer_paused && !data.buzzer_pressed && !timerActive) {
+            resumeTimer();
+        } else if (data.timer_paused && timerActive) {
             pauseTimer();
         }
+
+        questionNumber.textContent = `Question ${data.question_number}/${data.total_questions}`;
+        questionText.textContent = data.current_question.question;
+    } else {
+        currentQuestionKey = null;
+        timerActive = false;
     }
     
     updatePlayersDisplay();
@@ -137,7 +151,7 @@ socket.on('game_update', function(data) {
     if (!data.buzzer_pressed) {
         hideAnswerButtons();
         buzzerAlert.textContent = '';
-        if (!data.timer_paused) {
+        if (!data.timer_paused && !timerActive) {
             resumeTimer();
         }
     }
@@ -155,6 +169,8 @@ socket.on('buzzer_activated', function(data) {
 
 socket.on('game_finished', function() {
     clearInterval(timerInterval);
+    timerActive = false;
+    currentQuestionKey = null;
     setTimeout(() => {
         window.location.href = '/winner';
     }, 2000);

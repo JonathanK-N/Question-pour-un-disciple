@@ -39,52 +39,91 @@
 
     <script>
         const socket = io();
+        const roomId = '{{ room_id or "default" }}';
         let playerName = '';
         let canBuzz = false;
 
         function joinGame() {
             const nameInput = document.getElementById('player-name');
-            playerName = nameInput.value.trim();
+            const name = nameInput.value.trim();
             
-            if (playerName) {
-                socket.emit('join_player', {name: playerName});
-                document.getElementById('login-screen').style.display = 'none';
-                document.getElementById('game-screen').style.display = 'block';
-                document.getElementById('welcome-text').textContent = `Bienvenue ${playerName} !`;
+            if (!name) {
+                alert('Veuillez entrer votre nom');
+                return;
             }
+            
+            if (name.length > 20) {
+                alert('Le nom doit faire moins de 20 caractères');
+                return;
+            }
+            
+            playerName = name;
+            socket.emit('join_player', {name: playerName, room_id: roomId});
         }
+        
+        socket.on('join_success', function(data) {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('game-screen').style.display = 'block';
+            document.getElementById('welcome-text').textContent = `Bienvenue ${data.name} !`;
+        });
+        
+        socket.on('join_error', function(data) {
+            alert(data.message);
+        });
 
         function pressBuzzer() {
-            if (canBuzz) {
-                socket.emit('buzzer_press', {player: playerName});
+            if (canBuzz && playerName) {
+                socket.emit('buzzer_press', {player: playerName, room_id: roomId});
                 canBuzz = false;
-                document.getElementById('buzzer-btn').classList.add('pressed');
-                document.getElementById('buzzer-btn').disabled = true;
+                const btn = document.getElementById('buzzer-btn');
+                btn.classList.add('pressed');
+                btn.disabled = true;
                 document.getElementById('buzzer-status').textContent = 'Buzzer activé !';
+                
+                // Feedback visuel
+                btn.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    btn.style.transform = '';
+                }, 200);
             }
         }
 
         socket.on('game_update', function(data) {
+            // Mise à jour des informations de jeu
             if (data.current_question) {
                 document.getElementById('question-info').textContent = 
                     `Question ${data.question_number}/${data.total_questions}`;
                 
                 if (!data.buzzer_pressed && !data.game_finished) {
                     canBuzz = true;
-                    document.getElementById('buzzer-btn').disabled = false;
-                    document.getElementById('buzzer-btn').classList.remove('pressed');
+                    const btn = document.getElementById('buzzer-btn');
+                    btn.disabled = false;
+                    btn.classList.remove('pressed');
                     document.getElementById('buzzer-status').textContent = 'Prêt à buzzer !';
                 }
+            } else if (!data.game_finished) {
+                document.getElementById('question-info').textContent = 'En attente...';
+                canBuzz = false;
+                document.getElementById('buzzer-btn').disabled = true;
             }
 
-            // Mettre à jour le score du joueur
+            // Mise à jour du score avec animation
             if (data.players && data.players[playerName]) {
-                document.getElementById('my-score').textContent = data.players[playerName].score;
+                const scoreElement = document.getElementById('my-score');
+                const newScore = data.players[playerName].score;
+                if (scoreElement.textContent !== newScore.toString()) {
+                    scoreElement.style.transform = 'scale(1.2)';
+                    scoreElement.textContent = newScore;
+                    setTimeout(() => {
+                        scoreElement.style.transform = '';
+                    }, 300);
+                }
             }
 
             if (data.game_finished) {
                 document.getElementById('buzzer-status').textContent = 'Jeu terminé !';
                 document.getElementById('buzzer-btn').disabled = true;
+                canBuzz = false;
             }
         });
 
@@ -108,6 +147,19 @@
             document.getElementById('game-screen').style.display = 'none';
             document.getElementById('login-screen').style.display = 'block';
             document.getElementById('player-name').value = '';
+        });
+
+        // Gestion de la reconnexion
+        socket.on('disconnect', function() {
+            document.getElementById('buzzer-status').textContent = 'Connexion perdue...';
+            document.getElementById('buzzer-btn').disabled = true;
+            canBuzz = false;
+        });
+        
+        socket.on('reconnect', function() {
+            if (playerName) {
+                socket.emit('join_player', {name: playerName, room_id: roomId});
+            }
         });
 
         // Permettre de rejoindre en appuyant sur Entrée

@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Écran de Projection</title>
+    <title>&Eacute;cran de projection</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
 </head>
@@ -12,29 +12,29 @@
         <header class="display-header">
             <h1>🏆 Question pour un Disciple 🏆</h1>
             <div class="timer-section">
-                <div id="timer">50</div>
+                <div id="timer">20</div>
                 <div class="timer-bar">
                     <div id="timer-progress"></div>
                 </div>
             </div>
-            <button id="fullscreen-btn" onclick="toggleFullscreen()">📺 Plein écran</button>
+            <button id="fullscreen-btn" onclick="toggleFullscreen()">📺 Plein &eacute;cran</button>
         </header>
 
         <main class="display-main">
             <div class="question-display">
                 <div id="question-number">En attente...</div>
-                <div id="question-text">Le jeu va bientôt commencer !</div>
+                <div id="question-text">Le jeu va bientôt commencer&nbsp;!</div>
                 <div id="buzzer-alert"></div>
             </div>
         </main>
 
         <aside class="display-scoreboard">
-            <h2>🏅 Classement</h2>
+            <h2>📊 Classement en direct</h2>
             <div id="players-ranking"></div>
         </aside>
 
-        <div id="final-results" class="final-screen" style="display:none;">
-            <h1>🎉 Résultats Finaux 🎉</h1>
+        <div id="final-results" class="final-screen">
+            <h1>🎉 R&eacute;sultats finaux 🎉</h1>
             <div id="podium"></div>
         </div>
     </div>
@@ -57,13 +57,21 @@
 
     <script>
         const socket = io();
-        let timer = 50;
+        const roomId = '{{ room_id or "default" }}';
+        let timer = 20;
         let timerInterval;
+        let timerAudio = null;
+        let gameData = {};
+        let currentQuestionKey = null;
+        let timerActive = false;
+        let pendingFinalResultsRequest = false;
+        let finalResultsFetchAttempted = false;
+        let finalResultsShown = false;
 
         function updateTimer(timeLeft) {
             timer = timeLeft;
             document.getElementById('timer').textContent = timer;
-            const percentage = (timer / 50) * 100;
+            const percentage = (timer / 20) * 100;
             document.getElementById('timer-progress').style.width = percentage + '%';
             
             if (timer <= 10) {
@@ -76,8 +84,20 @@
         }
 
         function startTimer() {
-            timer = 50;
+            clearInterval(timerInterval);
+            if (timerAudio) {
+                timerAudio.pause();
+            }
+            timer = 20;
             updateTimer(timer);
+            
+            // Démarrer la musique du timer
+            timerAudio = document.getElementById('timer-sound');
+            if (timerAudio) {
+                timerAudio.currentTime = 0;
+                timerAudio.loop = true;
+                timerAudio.play().catch(e => {});
+            }
             
             timerInterval = setInterval(() => {
                 timer--;
@@ -85,53 +105,121 @@
                 
                 if (timer <= 0) {
                     clearInterval(timerInterval);
-                    // Son de fin de temps
+                    if (timerAudio) {
+                        timerAudio.pause();
+                    }
+                    // Jouer le son timeout
                     const timeoutAudio = document.getElementById('timeout-sound');
                     timeoutAudio.currentTime = 0;
-                    timeoutAudio.play().catch(e => console.log('Son timeout non disponible'));
-                    socket.emit('time_up');
+                    timeoutAudio.play().catch(e => {});
+                    
+                    socket.emit('time_up', {room_id: roomId});
                 }
             }, 1000);
+            timerActive = true;
         }
 
         function pauseTimer() {
             clearInterval(timerInterval);
+            if (timerAudio) {
+                timerAudio.pause();
+            }
+            timerActive = false;
+        }
+        
+        function resumeTimer() {
+            if (timer > 0) {
+                clearInterval(timerInterval);
+                if (!timerAudio) {
+                    timerAudio = document.getElementById('timer-sound');
+                }
+                timerInterval = setInterval(() => {
+                    timer--;
+                    updateTimer(timer);
+                    
+                    if (timer <= 0) {
+                        clearInterval(timerInterval);
+                        if (timerAudio) {
+                            timerAudio.pause();
+                        }
+                        const timeoutAudio = document.getElementById('timeout-sound');
+                        timeoutAudio.currentTime = 0;
+                        timeoutAudio.play().catch(e => {});
+                        
+                        socket.emit('time_up', {room_id: roomId});
+                    }
+                }, 1000);
+                
+                if (timerAudio && timerAudio.paused) {
+                    timerAudio.play().catch(e => {});
+                }
+                timerActive = true;
+            }
         }
 
         function updateRanking(players) {
+            const ranking = document.getElementById('players-ranking');
             const sortedPlayers = Object.entries(players || {})
                 .sort(([,a], [,b]) => b.score - a.score);
+
+            if (sortedPlayers.length === 0) {
+                ranking.innerHTML = `
+                    <div class="player-rank empty-state">
+                        <span class="player-name">Aucun joueur pour le moment</span>
+                    </div>
+                `;
+                return;
+            }
             
-            const ranking = document.getElementById('players-ranking');
             ranking.innerHTML = '';
+            const medals = ['🥇', '🥈', '🥉'];
             
             sortedPlayers.forEach(([name, data], index) => {
                 const div = document.createElement('div');
                 div.className = `player-rank rank-${index + 1}`;
+                const badge = medals[index] || '⭐';
                 div.innerHTML = `
-                    <span class="rank-number">${index + 1}</span>
+                    <span class="rank-number">${badge}</span>
                     <span class="player-name">${name}</span>
-                    <span class="player-score">${data.score}</span>
+                    <span class="player-score">${data.score} pts</span>
                 `;
                 ranking.appendChild(div);
             });
         }
 
         socket.on('game_update', function(data) {
+            console.log('Mise à jour du jeu:', data);
+            gameData = data;
+
+            if (finalResultsShown) {
+                updateRanking(data.players);
+                if (data.game_finished) {
+                    showFinalResults();
+                }
+                return;
+            }
+            
             if (data.current_question) {
+                const questionKey = `${data.question_number}-${data.current_question.question}`;
+                const isNewQuestion = questionKey !== currentQuestionKey;
+
+                if (isNewQuestion) {
+                    currentQuestionKey = questionKey;
+                    console.log('Démarrage du timer');
+                    startTimer();
+                } else if (!data.timer_paused && !data.buzzer_pressed && !timerActive) {
+                    console.log('Reprise du timer');
+                    resumeTimer();
+                }
+
+                console.log('Nouvelle question:', data.current_question.question);
                 document.getElementById('question-number').textContent = 
                     `Question ${data.question_number} / ${data.total_questions}`;
                 document.getElementById('question-text').textContent = data.current_question.question;
-                
-                if (!data.timer_paused && !data.buzzer_pressed) {
-                    startTimer();
-                    // Son timer au début de la question
-                    const timerAudio = document.getElementById('timer-sound');
-                    timerAudio.currentTime = 0;
-                    timerAudio.play().catch(e => console.log('Son timer non disponible'));
-                } else if (data.timer_paused) {
-                    pauseTimer();
-                }
+            } else {
+                currentQuestionKey = null;
+                document.getElementById('question-number').textContent = 'En attente...';
+                document.getElementById('question-text').textContent = 'Préparation de la prochaine question';
             }
             
             updateRanking(data.players);
@@ -139,9 +227,16 @@
             if (!data.buzzer_pressed) {
                 document.getElementById('buzzer-alert').textContent = '';
             }
+
+            if (data.game_finished && !finalResultsShown) {
+                finalResultsShown = true;
+                showFinalResults();
+            }
         });
 
         socket.on('buzzer_activated', function(data) {
+            if (finalResultsShown) return;
+            console.log('Buzzer activé par:', data.player);
             // Son buzzer
             const buzzerAudio = document.getElementById('buzzer-sound');
             buzzerAudio.currentTime = 0;
@@ -168,6 +263,11 @@
                 }
             });
             
+            // Arrêter la musique du timer
+            if (timerAudio) {
+                timerAudio.pause();
+            }
+            
             document.getElementById('buzzer-alert').innerHTML = 
                 `🚨 <strong>${data.player}</strong> a buzzé ! 🚨`;
             pauseTimer();
@@ -175,32 +275,49 @@
 
         socket.on('game_finished', function() {
             clearInterval(timerInterval);
-            setTimeout(() => {
-                showFinalResults();
-            }, 2000);
+            if (timerAudio) {
+                timerAudio.pause();
+            }
+            timerActive = false;
+            currentQuestionKey = null;
         });
         
-        socket.on('game_reset', function() {
-            // Retour à l'écran principal
-            document.getElementById('final-results').style.display = 'none';
-            document.querySelector('.display-container').style.display = 'grid';
-            document.getElementById('question-text').textContent = 'Le jeu va bientôt commencer !';
-            document.getElementById('question-number').textContent = 'En attente...';
-            document.getElementById('buzzer-alert').textContent = '';
-            updateRanking({});
+        socket.on('show_final_results', function() {
+            if (finalResultsShown) return;
+            finalResultsShown = true;
+            showFinalResults();
         });
-
+        
         function showFinalResults() {
-            const sortedPlayers = Object.entries(gameData.players || {})
-                .sort(([,a], [,b]) => b.score - a.score);
-            
-            document.querySelector('.display-container').style.display = 'none';
-            document.getElementById('final-results').style.display = 'flex';
+            const finalSection = document.getElementById('final-results');
+            finalSection.classList.add('visible');
+            finalSection.setAttribute('aria-hidden', 'false');
             
             const podium = document.getElementById('podium');
             podium.innerHTML = '';
-            
-            const trophies = ['🥇', '🥈', '🥉'];
+
+            const playerEntries = Object.entries(gameData.players || {});
+
+            if (playerEntries.length === 0) {
+                if (!finalResultsFetchAttempted) {
+                    finalResultsFetchAttempted = true;
+                    podium.innerHTML = `<div class="loading-results">Récupération des scores...</div>`;
+                    if (!pendingFinalResultsRequest) {
+                        pendingFinalResultsRequest = true;
+                        socket.emit('get_final_results', {room_id: roomId});
+                    }
+                } else {
+                    podium.innerHTML = `<div class="no-results">Aucun joueur à afficher</div>`;
+                }
+                return;
+            }
+
+            pendingFinalResultsRequest = false;
+            finalResultsFetchAttempted = true;
+
+            const sortedPlayers = playerEntries.sort(([,a], [,b]) => b.score - a.score);
+            const topPlayers = sortedPlayers.slice(0, 3);
+
             const positions = ['1er', '2ème', '3ème'];
             
             // Afficher seulement les joueurs avec des scores > 0
@@ -216,10 +333,11 @@
                         <div class="trophy">${trophies[index]}</div>
                         <div class="winner-name">${name}</div>
                         <div class="winner-score">${data.score} points</div>
-                        <div class="position">${positions[index]}</div>
-                    `;
-                    podium.appendChild(div);
-                }, index * 1000);
+                        <div class="position">${positions[index] || `${index + 1}ème`}</div>
+                    </div>
+                `;
+                podium.appendChild(card);
+                requestAnimationFrame(() => card.classList.add('animate-in'));
             });
             
             // Si aucun gagnant, afficher un message
@@ -229,15 +347,91 @@
         }
 
         socket.on('play_sound', function(data) {
+            console.log('Jouer son:', data.sound);
             const audio = document.getElementById(data.sound + '-sound');
             if (audio) {
                 audio.currentTime = 0;
-                audio.play().catch(e => console.log('Son non disponible'));
+                audio.play().catch(e => console.log('Son non disponible:', e));
+            } else {
+                console.log('Audio non trouvé:', data.sound + '-sound');
             }
+        });
+        
+        socket.on('resume_timer', function() {
+            if (finalResultsShown) return;
+            console.log('Reprise du timer');
+            resumeTimer();
+        });
+        
+        socket.on('pause_timer', function() {
+            if (finalResultsShown) return;
+            console.log('Pause du timer');
+            pauseTimer();
+        });
+
+        function hideFinalResults() {
+            const finalSection = document.getElementById('final-results');
+            finalSection.classList.remove('visible');
+            finalSection.setAttribute('aria-hidden', 'true');
+            pendingFinalResultsRequest = false;
+            finalResultsFetchAttempted = false;
+            document.getElementById('podium').innerHTML = '';
+        }
+
+        hideFinalResults();
+
+        socket.on('final_results', function(players) {
+            pendingFinalResultsRequest = false;
+            if (players && typeof players === 'object') {
+                gameData.players = players;
+                if (!finalResultsShown) {
+                    updateRanking(players);
+                }
+                if (finalResultsShown || (gameData && gameData.game_finished)) {
+                    showFinalResults();
+                }
+            }
+        });
+
+        socket.on('game_started', function() {
+            finalResultsShown = false;
+            currentQuestionKey = null;
+            timerActive = false;
+            hideFinalResults();
+            document.getElementById('question-number').textContent = 'Préparation...';
+            document.getElementById('question-text').textContent = 'Le jeu va commencer, préparez-vous !';
+            document.getElementById('buzzer-alert').textContent = '';
+        });
+
+        socket.on('game_reset', function() {
+            finalResultsShown = false;
+            currentQuestionKey = null;
+            timerActive = false;
+            hideFinalResults();
+            document.getElementById('question-number').textContent = 'En attente...';
+            document.getElementById('question-text').textContent = 'Le jeu va bientôt commencer !';
+            document.getElementById('buzzer-alert').textContent = '';
+            updateRanking({});
         });
 
         socket.on('connect', function() {
             console.log('Écran de projection connecté');
+            socket.emit('join_room', {room_id: roomId});
+            
+            // Forcer la mise à jour initiale
+            setTimeout(() => {
+                socket.emit('join_room', {room_id: roomId});
+            }, 1000);
+        });
+        
+        // Debug des évènements
+        socket.on('disconnect', function() {
+            console.log('Déconnecté de la projection');
+        });
+        
+        socket.on('reconnect', function() {
+            console.log('Reconnecté à la projection');
+            socket.emit('join_room', {room_id: roomId});
         });
         
         function toggleFullscreen() {
@@ -260,3 +454,5 @@
     </script>
 </body>
 </html>
+
+
