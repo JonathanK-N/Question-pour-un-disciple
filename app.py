@@ -81,13 +81,16 @@ def handle_join_player(data):
         emit('join_error', {'message': 'Nom invalide ou jeu en cours'})
         return
     
-    # Empêcher les doublons pendant le jeu
-    if player_name in game_state['players'] and game_state['current_question'] > 0:
-        emit('join_error', {'message': 'Joueur déjà connecté'})
+    if player_name in game_state['players']:
+        emit('join_success', {'name': player_name})
+        socketio.emit('game_update', get_game_data(room_id), room=room_id)
         return
     
-    if player_name not in game_state['players']:
-        game_state['players'][player_name] = {'score': 0}
+    if game_state['current_question'] > 0 and not game_state['game_finished']:
+        emit('join_error', {'message': 'La partie est déjà en cours'})
+        return
+    
+    game_state['players'][player_name] = {'score': 0}
     
     emit('join_success', {'name': player_name})
     socketio.emit('game_update', get_game_data(room_id), room=room_id)
