@@ -319,15 +319,18 @@
             const topPlayers = sortedPlayers.slice(0, 3);
 
             const positions = ['1er', '2ème', '3ème'];
-            const trophies = ['🥇', '🥈', '🥉'];
-
-            topPlayers.forEach(([name, data], index) => {
-                const card = document.createElement('div');
-                card.className = `podium-place place-${index + 1}`;
-                card.style.setProperty('--delay', `${index * 0.6}s`);
-                card.innerHTML = `
-                    <div class="podium-inner">
-                        <div class="trophy">${trophies[index] || '⭐'}</div>
+            
+            // Afficher seulement les joueurs avec des scores > 0
+            const winners = sortedPlayers.filter(([name, data]) => data.score > 0).slice(0, 3);
+            
+            // Animation séquentielle des gagnants
+            winners.forEach(([name, data], index) => {
+                setTimeout(() => {
+                    const div = document.createElement('div');
+                    div.className = `podium-place place-${index + 1} animate-in`;
+                    
+                    div.innerHTML = `
+                        <div class="trophy">${trophies[index]}</div>
                         <div class="winner-name">${name}</div>
                         <div class="winner-score">${data.score} points</div>
                         <div class="position">${positions[index] || `${index + 1}ème`}</div>
@@ -336,6 +339,11 @@
                 podium.appendChild(card);
                 requestAnimationFrame(() => card.classList.add('animate-in'));
             });
+            
+            // Si aucun gagnant, afficher un message
+            if (winners.length === 0) {
+                podium.innerHTML = '<div class="no-winners">Aucun joueur n\'a marqué de points</div>';
+            }
         }
 
         socket.on('play_sound', function(data) {
