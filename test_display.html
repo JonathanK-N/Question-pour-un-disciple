@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Display</title>
+</head>
+<body>
+    <h1>Test de l'écran de projection</h1>
+    <div id="status">Connexion...</div>
+    <div id="events"></div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const eventsDiv = document.getElementById('events');
+        const statusDiv = document.getElementById('status');
+        
+        function addEvent(message) {
+            const div = document.createElement('div');
+            div.textContent = new Date().toLocaleTimeString() + ': ' + message;
+            eventsDiv.appendChild(div);
+        }
+        
+        socket.on('connect', function() {
+            statusDiv.textContent = 'Connecté';
+            addEvent('Connecté au serveur');
+            socket.emit('join_room', {room_id: 'default'});
+        });
+        
+        socket.on('disconnect', function() {
+            statusDiv.textContent = 'Déconnecté';
+            addEvent('Déconnecté du serveur');
+        });
+        
+        socket.on('game_update', function(data) {
+            addEvent('Game update reçu: ' + JSON.stringify(data));
+        });
+        
+        socket.on('buzzer_activated', function(data) {
+            addEvent('Buzzer activé: ' + data.player);
+        });
+        
+        socket.on('play_sound', function(data) {
+            addEvent('Son à jouer: ' + data.sound);
+        });
+    </script>
+</body>
+</html>

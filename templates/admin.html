@@ -13,15 +13,36 @@
             <h1>🎯 Interface Animateur</h1>
             <div class="game-status">
                 <span id="question-counter">Question 0/0</span>
-                <span id="timer-display">50s</span>
+                <span id="timer-display">20s</span>
             </div>
         </header>
 
         <div class="admin-content">
+            <div class="stats-panel">
+                <h3>📊 Statistiques</h3>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-value" id="total-players">0</span>
+                        <span class="stat-label">Joueurs</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="correct-count">0</span>
+                        <span class="stat-label">Bonnes réponses</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="leader-name">-</span>
+                        <span class="stat-label">Leader</span>
+                    </div>
+                </div>
+            </div>
+            
             <div class="question-panel">
                 <h3>Question actuelle</h3>
                 <div id="current-question">Cliquez sur "Démarrer" pour commencer</div>
                 <div id="correct-answer" class="answer-display"></div>
+                <div class="progress-bar">
+                    <div id="question-progress"></div>
+                </div>
             </div>
 
             <div class="buzzer-panel">
@@ -30,6 +51,7 @@
                 <div class="buzzer-controls">
                     <button id="correct-btn" onclick="correctAnswer()" disabled>✅ Correct</button>
                     <button id="wrong-btn" onclick="wrongAnswer()" disabled>❌ Incorrect</button>
+                    <button id="skip-btn" onclick="skipQuestion()" style="display:none;">⏭️ Passer</button>
                 </div>
             </div>
 
@@ -44,7 +66,7 @@
                     <button id="start-btn" onclick="startGame()" disabled>🚀 Démarrer le jeu</button>
                 <button onclick="showQuestionManager()">📝 Gérer les questions</button>
                 </div>
-                <button id="next-btn" onclick="nextQuestion()" style="display:none;">➡️ Question suivante</button>
+
             </div>
 
             <div class="players-panel" id="game-players" style="display:none;">
@@ -59,23 +81,19 @@
                     <input type="text" id="new-answer" placeholder="Réponse">
                     <button onclick="addQuestion()">➕ Ajouter</button>
                 </div>
+                <div class="import-questions">
+                    <input type="file" id="questions-file" accept="application/pdf">
+                    <button onclick="importQuestions()">📥 Importer un PDF</button>
+                    <div id="import-feedback" class="import-feedback"></div>
+                </div>
                 <div id="questions-list"></div>
                 <button onclick="hideQuestionManager()">❌ Fermer</button>
             </div>
         </div>
     </div>
 
-    <audio id="buzzer-sound" preload="auto">
-        <source src="{{ url_for('static', filename='buzzer.mp3') }}" type="audio/mpeg">
-    </audio>
     <audio id="timer-sound" preload="auto">
         <source src="{{ url_for('static', filename='timer.mp3') }}" type="audio/mpeg">
-    </audio>
-    <audio id="correct-sound" preload="auto">
-        <source src="{{ url_for('static', filename='correct.mp3') }}" type="audio/mpeg">
-    </audio>
-    <audio id="wrong-sound" preload="auto">
-        <source src="{{ url_for('static', filename='wrong.mp3') }}" type="audio/mpeg">
     </audio>
 
     <script>
@@ -83,29 +101,28 @@
         let gameData = {};
 
         function startGame() {
-            socket.emit('start_game');
+            const roomId = '{{ room_id or "default" }}';
+            socket.emit('start_game', {room_id: roomId});
             document.getElementById('pre-game').style.display = 'none';
             document.getElementById('game-players').style.display = 'block';
+            document.getElementById('skip-btn').style.display = 'inline-block';
         }
 
         function correctAnswer() {
-            const audio = document.getElementById('correct-sound');
-            audio.currentTime = 0;
-            audio.play().catch(e => console.log('Son correct non disponible'));
-            socket.emit('correct_answer');
+            const roomId = '{{ room_id or "default" }}';
+            socket.emit('correct_answer', {room_id: roomId});
             disableBuzzerControls();
         }
 
         function wrongAnswer() {
-            const audio = document.getElementById('wrong-sound');
-            audio.currentTime = 0;
-            audio.play().catch(e => console.log('Son incorrect non disponible'));
-            socket.emit('wrong_answer');
+            const roomId = '{{ room_id or "default" }}';
+            socket.emit('wrong_answer', {room_id: roomId});
             disableBuzzerControls();
         }
 
-        function nextQuestion() {
-            socket.emit('next_question');
+        function skipQuestion() {
+            const roomId = '{{ room_id or "default" }}';
+            socket.emit('next_question', {room_id: roomId});
         }
 
         function disableBuzzerControls() {
@@ -124,12 +141,8 @@
             gameData = data;
             
             if (data.current_question) {
-                // Jouer le son du timer si nouvelle question
                 if (data.question_number !== currentQuestionNumber) {
                     currentQuestionNumber = data.question_number;
-                    const timerAudio = document.getElementById('timer-sound');
-                    timerAudio.currentTime = 0;
-                    timerAudio.play().catch(e => console.log('Son timer non disponible'));
                 }
                 
                 document.getElementById('question-counter').textContent = 
@@ -137,42 +150,39 @@
                 document.getElementById('current-question').textContent = data.current_question.question;
                 document.getElementById('correct-answer').textContent = 
                     `Réponse: ${data.current_question.answer}`;
+                
+                // Mise à jour de la barre de progression
+                const progress = (data.question_number / data.total_questions) * 100;
+                document.getElementById('question-progress').style.width = progress + '%';
             }
 
             updatePlayersList();
+            updateStats();
             
             if (!data.buzzer_pressed) {
                 document.getElementById('buzzer-status').textContent = 'En attente...';
                 disableBuzzerControls();
             }
         });
+        
+        function updateStats() {
+            const players = gameData.players || {};
+            const playerCount = Object.keys(players).length;
+            
+            // Nombre de joueurs
+            document.getElementById('total-players').textContent = playerCount;
+            
+            // Nombre de bonnes réponses totales
+            const totalCorrect = Object.values(players).reduce((sum, player) => sum + (player.score / 20), 0);
+            document.getElementById('correct-count').textContent = totalCorrect;
+            
+            // Leader actuel
+            const sortedPlayers = Object.entries(players).sort(([,a], [,b]) => b.score - a.score);
+            const leader = sortedPlayers.length > 0 ? sortedPlayers[0][0] : '-';
+            document.getElementById('leader-name').textContent = leader;
+        }
 
         socket.on('buzzer_activated', function(data) {
-            // Essayer le fichier MP3, sinon générer un son
-            const audio = document.getElementById('buzzer-sound');
-            audio.play().catch(e => {
-                // Fallback: générer un son
-                try {
-                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                    const oscillator = audioContext.createOscillator();
-                    const gainNode = audioContext.createGain();
-                    
-                    oscillator.connect(gainNode);
-                    gainNode.connect(audioContext.destination);
-                    
-                    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-                    oscillator.type = 'square';
-                    
-                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-                    
-                    oscillator.start(audioContext.currentTime);
-                    oscillator.stop(audioContext.currentTime + 0.5);
-                } catch(err) {
-                    console.log('Son non disponible');
-                }
-            });
-            
             document.getElementById('buzzer-status').innerHTML = 
                 `<strong>${data.player}</strong> a buzzé !`;
             enableBuzzerControls();
@@ -181,6 +191,17 @@
         socket.on('game_finished', function() {
             document.getElementById('buzzer-status').textContent = 'Jeu terminé !';
             alert('Le jeu est terminé ! Consultez les résultats sur l\'écran de projection.');
+        });
+        
+        socket.on('game_reset', function() {
+            // Retour à l'état initial
+            document.getElementById('pre-game').style.display = 'block';
+            document.getElementById('game-players').style.display = 'none';
+            document.getElementById('buzzer-status').textContent = 'En attente...';
+            document.getElementById('current-question').textContent = 'Cliquez sur "Démarrer" pour commencer';
+            document.getElementById('correct-answer').textContent = '';
+            disableBuzzerControls();
+            updatePlayersList();
         });
 
         socket.on('time_warning', function() {
@@ -232,22 +253,66 @@
         }
         
         function loadQuestions() {
-            socket.emit('get_questions');
+            const roomId = '{{ room_id or "default" }}';
+            socket.emit('get_questions', {room_id: roomId});
         }
         
         function addQuestion() {
             const question = document.getElementById('new-question').value;
             const answer = document.getElementById('new-answer').value;
+            const roomId = '{{ room_id or "default" }}';
             
             if (question && answer) {
-                socket.emit('add_question', {question: question, answer: answer});
+                socket.emit('add_question', {question: question, answer: answer, room_id: roomId});
                 document.getElementById('new-question').value = '';
                 document.getElementById('new-answer').value = '';
             }
         }
         
         function deleteQuestion(index) {
-            socket.emit('delete_question', {index: index});
+            const roomId = '{{ room_id or "default" }}';
+            socket.emit('delete_question', {index: index, room_id: roomId});
+        }
+
+        async function importQuestions() {
+            const fileInput = document.getElementById('questions-file');
+            const feedback = document.getElementById('import-feedback');
+            const roomId = '{{ room_id or "default" }}';
+            const importUrl = roomId === 'default'
+                ? '/import_questions'
+                : `/room/${encodeURIComponent(roomId)}/import_questions`;
+            
+            feedback.textContent = '';
+            feedback.className = 'import-feedback';
+
+            if (!fileInput.files || fileInput.files.length === 0) {
+                feedback.textContent = 'Sélectionnez un fichier PDF.';
+                feedback.classList.add('error');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            try {
+                const response = await fetch(importUrl, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json().catch(() => ({}));
+
+                if (!response.ok || !data.success) {
+                    throw new Error(data.message || 'Import impossible.');
+                }
+
+                feedback.textContent = `${data.count} question(s) importée(s).`;
+                feedback.classList.add('success');
+                fileInput.value = '';
+                loadQuestions();
+            } catch (error) {
+                feedback.textContent = error.message;
+                feedback.classList.add('error');
+            }
         }
         
         socket.on('questions_list', function(questions) {
@@ -270,7 +335,14 @@
 
         socket.on('connect', function() {
             console.log('Animateur connecté');
-            document.getElementById('game-url').textContent = window.location.origin + '/player';
+            const roomId = '{{ room_id or "default" }}';
+            const baseUrl = window.location.origin;
+            if (roomId === 'default') {
+                document.getElementById('game-url').textContent = baseUrl + '/player';
+            } else {
+                document.getElementById('game-url').textContent = baseUrl + '/room/' + roomId + '/player';
+            }
+            socket.emit('join_room', {room_id: roomId});
         });
     </script>
 </body>
