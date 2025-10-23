@@ -14,19 +14,19 @@
             <div class="role-card">
                 <h2>👨‍🏫 Animateur</h2>
                 <p>Gérer le jeu et valider les réponses</p>
-                <a href="/admin" class="btn btn-admin">Accéder</a>
+                <a href="{{ url_for('admin', room_id=room_id) }}" class="btn btn-admin">Accéder</a>
             </div>
             
             <div class="role-card">
                 <h2>🎮 Joueur</h2>
                 <p>Participer au quiz avec votre buzzer</p>
-                <a href="/player" class="btn btn-player">Jouer</a>
+                <a href="{{ url_for('player', room_id=room_id) }}" class="btn btn-player">Jouer</a>
             </div>
             
             <div class="role-card">
                 <h2>📺 Écran de projection</h2>
                 <p>Affichage pour le public</p>
-                <a href="/display" class="btn btn-display">Projeter</a>
+                <a href="{{ url_for('display', room_id=room_id) }}" class="btn btn-display">Projeter</a>
             </div>
         </div>
     </div>
