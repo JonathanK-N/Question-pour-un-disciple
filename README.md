@@ -59,13 +59,13 @@ sequenceDiagram
 
 ### 🌐 **Démo Live**
 
-[![Démo Live](https://img.shields.io/badge/🎯_Démo_Live-Essayer_Maintenant-success?style=for-the-badge&logo=rocket)](https://question-pour-un-disciple.railway.app)
+[![Démo Live](https://img.shields.io/badge/🎯_Démo_Live-Essayer_Maintenant-success?style=for-the-badge&logo=rocket)](https://questions-pour-un-disciple.com/)
 
 **Ou créez votre propre salle :**
 
-🎯 **Animateur :** `https://votre-url.com/room/VOTRE_SALLE/admin`  
-🎮 **Joueurs :** `https://votre-url.com/room/VOTRE_SALLE/player`  
-📺 **Projection :** `https://votre-url.com/room/VOTRE_SALLE/display`
+🎯 **Animateur :** `https://questions-pour-un-disciple.com/room/VOTRE_SALLE/admin`  
+🎮 **Joueurs :** `https://questions-pour-un-disciple.com/room/VOTRE_SALLE/player`  
+📺 **Projection :** `https://questions-pour-un-disciple.com/room/VOTRE_SALLE/display`
 
 </div>
 
