@@ -81,13 +81,20 @@
                     <input type="text" id="new-answer" placeholder="Réponse">
                     <button onclick="addQuestion()">➕ Ajouter</button>
                 </div>
+                <div class="import-questions">
+                    <input type="file" id="questions-file" accept="application/pdf">
+                    <button onclick="importQuestions()">📥 Importer un PDF</button>
+                    <div id="import-feedback" class="import-feedback"></div>
+                </div>
                 <div id="questions-list"></div>
                 <button onclick="hideQuestionManager()">❌ Fermer</button>
             </div>
         </div>
     </div>
 
-
+    <audio id="timer-sound" preload="auto">
+        <source src="{{ url_for('static', filename='timer.mp3') }}" type="audio/mpeg">
+    </audio>
 
     <script>
         const socket = io();
@@ -185,6 +192,17 @@
             document.getElementById('buzzer-status').textContent = 'Jeu terminé !';
             alert('Le jeu est terminé ! Consultez les résultats sur l\'écran de projection.');
         });
+        
+        socket.on('game_reset', function() {
+            // Retour à l'état initial
+            document.getElementById('pre-game').style.display = 'block';
+            document.getElementById('game-players').style.display = 'none';
+            document.getElementById('buzzer-status').textContent = 'En attente...';
+            document.getElementById('current-question').textContent = 'Cliquez sur "Démarrer" pour commencer';
+            document.getElementById('correct-answer').textContent = '';
+            disableBuzzerControls();
+            updatePlayersList();
+        });
 
         socket.on('time_warning', function() {
             document.getElementById('timer-sound').play().catch(e => {});
@@ -235,22 +253,66 @@
         }
         
         function loadQuestions() {
-            socket.emit('get_questions');
+            const roomId = '{{ room_id or "default" }}';
+            socket.emit('get_questions', {room_id: roomId});
         }
         
         function addQuestion() {
             const question = document.getElementById('new-question').value;
             const answer = document.getElementById('new-answer').value;
+            const roomId = '{{ room_id or "default" }}';
             
             if (question && answer) {
-                socket.emit('add_question', {question: question, answer: answer});
+                socket.emit('add_question', {question: question, answer: answer, room_id: roomId});
                 document.getElementById('new-question').value = '';
                 document.getElementById('new-answer').value = '';
             }
         }
         
         function deleteQuestion(index) {
-            socket.emit('delete_question', {index: index});
+            const roomId = '{{ room_id or "default" }}';
+            socket.emit('delete_question', {index: index, room_id: roomId});
+        }
+
+        async function importQuestions() {
+            const fileInput = document.getElementById('questions-file');
+            const feedback = document.getElementById('import-feedback');
+            const roomId = '{{ room_id or "default" }}';
+            const importUrl = roomId === 'default'
+                ? '/import_questions'
+                : `/room/${encodeURIComponent(roomId)}/import_questions`;
+            
+            feedback.textContent = '';
+            feedback.className = 'import-feedback';
+
+            if (!fileInput.files || fileInput.files.length === 0) {
+                feedback.textContent = 'Sélectionnez un fichier PDF.';
+                feedback.classList.add('error');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            try {
+                const response = await fetch(importUrl, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json().catch(() => ({}));
+
+                if (!response.ok || !data.success) {
+                    throw new Error(data.message || 'Import impossible.');
+                }
+
+                feedback.textContent = `${data.count} question(s) importée(s).`;
+                feedback.classList.add('success');
+                fileInput.value = '';
+                loadQuestions();
+            } catch (error) {
+                feedback.textContent = error.message;
+                feedback.classList.add('error');
+            }
         }
         
         socket.on('questions_list', function(questions) {

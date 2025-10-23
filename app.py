@@ -2,6 +2,9 @@ from flask import Flask, render_template, request, jsonify
 from flask_socketio import SocketIO, emit, join_room, leave_room
 import json
 import os
+import io
+import re
+from PyPDF2 import PdfReader
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'quiz_secret_key'
@@ -20,9 +23,106 @@ def get_or_create_room(room_id):
             'buzzer_pressed': False,
             'buzzer_player': None,
             'timer_paused': False,
-            'game_finished': False
+            'game_finished': False,
+            'game_started': False
         }
     return game_rooms[room_id]
+
+
+def _extract_questions_from_text(text):
+    """Parse a raw text blob into question/answer pairs."""
+    questions = []
+    question_pattern = re.compile(r'^(?:q|question)\s*\d*\s*[:\-\.]?\s*(.*)', re.IGNORECASE)
+    answer_pattern = re.compile(r'^(?:r|réponse|reponse|answer)\s*\d*\s*[:\-\.]?\s*(.*)', re.IGNORECASE)
+
+    current = None
+    for raw_line in text.splitlines():
+        line = raw_line.strip()
+        if not line:
+            continue
+
+        q_match = question_pattern.match(line)
+        a_match = answer_pattern.match(line)
+
+        if q_match:
+            if current and 'question' in current and 'answer' in current:
+                questions.append(current)
+            current = {'question': q_match.group(1).strip()}
+            continue
+
+        if a_match and current:
+            current['answer'] = a_match.group(1).strip()
+            if current['question'] and current['answer']:
+                questions.append(current)
+                current = None
+            continue
+
+        if current and 'answer' not in current:
+            current['question'] = f"{current['question']} {line}".strip()
+        elif current and 'answer' in current:
+            current['answer'] = f"{current['answer']} {line}".strip()
+
+    if current and 'question' in current and 'answer' in current:
+        questions.append(current)
+
+    if questions:
+        return questions
+
+    # Fallback - split into paragraphs and take first line as question, rest as answer
+    paragraphs = [block.strip() for block in re.split(r'\n\s*\n', text) if block.strip()]
+    for block in paragraphs:
+        lines = [ln.strip() for ln in block.splitlines() if ln.strip()]
+        if len(lines) >= 2:
+            question = lines[0]
+            answer = " ".join(lines[1:]).strip()
+            if question and answer:
+                questions.append({'question': question, 'answer': answer})
+    return questions
+
+
+def parse_pdf_questions(file_storage):
+    """Read an uploaded PDF file and return a list of dict(question, answer)."""
+    try:
+        file_bytes = io.BytesIO(file_storage.read())
+        reader = PdfReader(file_bytes)
+    except Exception as exc:
+        raise ValueError(f"Impossible de lire le PDF ({exc})")
+
+    extracted_pages = []
+    for page in reader.pages:
+        try:
+            page_text = page.extract_text()
+        except Exception:
+            page_text = None
+        if page_text:
+            extracted_pages.append(page_text)
+
+    if not extracted_pages:
+        raise ValueError("Le PDF ne contient pas de texte exploitable.")
+
+    full_text = "\n".join(extracted_pages)
+    questions = _extract_questions_from_text(full_text)
+
+    if not questions:
+        raise ValueError(
+            "Aucune question détectée. Utilisez un format contenant des lignes "
+            "'Question: ...' et 'Réponse: ...' ou des blocs question/réponse."
+        )
+
+    # Nettoyage final (suppression des doublons et trim)
+    cleaned = []
+    seen = set()
+    for item in questions:
+        question = item.get('question', '').strip()
+        answer = item.get('answer', '').strip()
+        if not question or not answer:
+            continue
+        key = (question.lower(), answer.lower())
+        if key in seen:
+            continue
+        seen.add(key)
+        cleaned.append({'question': question, 'answer': answer})
+    return cleaned
 
 def load_questions(room_id):
     """Charge les questions depuis le fichier JSON"""
@@ -61,6 +161,11 @@ def player(room_id='default'):
     """Interface joueur"""
     return render_template('player.html', room_id=room_id)
 
+@app.route('/test')
+def test_display():
+    """Page de test pour diagnostiquer SocketIO"""
+    return render_template('../test_display.html')
+
 @socketio.on('join_player')
 def handle_join_player(data):
     """Joueur rejoint la partie"""
@@ -76,13 +181,16 @@ def handle_join_player(data):
         emit('join_error', {'message': 'Nom invalide ou jeu en cours'})
         return
     
-    # Empêcher les doublons pendant le jeu
-    if player_name in game_state['players'] and game_state['current_question'] > 0:
-        emit('join_error', {'message': 'Joueur déjà connecté'})
+    if player_name in game_state['players']:
+        emit('join_success', {'name': player_name})
+        socketio.emit('game_update', get_game_data(room_id), room=room_id)
         return
     
-    if player_name not in game_state['players']:
-        game_state['players'][player_name] = {'score': 0}
+    if game_state['game_started'] and not game_state['game_finished']:
+        emit('join_error', {'message': 'La partie est déjà en cours'})
+        return
+    
+    game_state['players'][player_name] = {'score': 0}
     
     emit('join_success', {'name': player_name})
     socketio.emit('game_update', get_game_data(room_id), room=room_id)
@@ -90,8 +198,14 @@ def handle_join_player(data):
 @app.route('/winner')
 def winner():
     """Page des résultats finaux"""
-    sorted_players = sorted(game_state['players'].items(), key=lambda x: x[1]['score'], reverse=True)
-    return render_template('winner.html', players=sorted_players)
+    room_id = request.args.get('room_id', 'default')
+    game_state = get_or_create_room(room_id)
+    sorted_players = sorted(
+        game_state['players'].items(),
+        key=lambda x: x[1]['score'],
+        reverse=True
+    )
+    return render_template('winner.html', players=sorted_players, room_id=room_id)
 
 @socketio.on('join_room')
 def handle_join_room(data):
@@ -171,8 +285,10 @@ def handle_time_up(data):
     socketio.start_background_task(delayed_next_question, room_id, 6)
 
 @socketio.on('get_final_results')
-def handle_get_final_results():
+def handle_get_final_results(data):
     """Envoyer les résultats finaux"""
+    room_id = data.get('room_id', 'default') if data else 'default'
+    game_state = get_or_create_room(room_id)
     emit('final_results', game_state['players'])
 
 @socketio.on('next_question')
@@ -192,37 +308,73 @@ def handle_timer_start():
     socketio.emit('timer_start')
 
 @socketio.on('get_questions')
-def handle_get_questions():
+def handle_get_questions(data):
     """Envoyer la liste des questions"""
+    room_id = data.get('room_id', 'default') if data else 'default'
+    game_state = get_or_create_room(room_id)
+    if not game_state['questions']:
+        load_questions(room_id)
     emit('questions_list', game_state['questions'])
 
 @socketio.on('add_question')
 def handle_add_question(data):
     """Ajouter une nouvelle question"""
+    room_id = data.get('room_id', 'default')
+    game_state = get_or_create_room(room_id)
+    
     new_question = {
         'question': data['question'],
         'answer': data['answer']
     }
     game_state['questions'].append(new_question)
-    save_questions()
+    save_questions(room_id)
     emit('questions_list', game_state['questions'])
 
 @socketio.on('delete_question')
 def handle_delete_question(data):
     """Supprimer une question"""
+    room_id = data.get('room_id', 'default')
+    game_state = get_or_create_room(room_id)
+    
     index = data['index']
     if 0 <= index < len(game_state['questions']):
         game_state['questions'].pop(index)
-        save_questions()
+        save_questions(room_id)
         emit('questions_list', game_state['questions'])
 
-def save_questions():
+def save_questions(room_id):
     """Sauvegarder les questions dans le fichier JSON"""
+    game_state = get_or_create_room(room_id)
     try:
         with open('data/questions.json', 'w', encoding='utf-8') as f:
             json.dump(game_state['questions'], f, ensure_ascii=False, indent=2)
     except Exception as e:
         print(f'Erreur sauvegarde: {e}')
+
+
+def _import_questions_for_room(room_id):
+    file = request.files.get('file')
+    if not file:
+        return jsonify({'success': False, 'message': 'Aucun fichier reçu'}), 400
+
+    load_questions(room_id)
+    try:
+        new_questions = parse_pdf_questions(file)
+    except ValueError as exc:
+        return jsonify({'success': False, 'message': str(exc)}), 400
+    except Exception as exc:  # pragma: no cover - unexpected errors
+        print(f'Erreur lors de l\'import PDF: {exc}')
+        return jsonify({'success': False, 'message': 'Erreur lors de l\'importation du fichier'}), 500
+
+    if not new_questions:
+        return jsonify({'success': False, 'message': 'Aucune question à ajouter.'}), 400
+
+    game_state = get_or_create_room(room_id)
+    game_state['questions'].extend(new_questions)
+    save_questions(room_id)
+
+    socketio.emit('questions_list', game_state['questions'], room=room_id)
+    return jsonify({'success': True, 'count': len(new_questions)})
 
 @socketio.on('start_game')
 def handle_start_game(data):
@@ -246,9 +398,24 @@ def handle_start_game(data):
     game_state['buzzer_pressed'] = False
     game_state['buzzer_player'] = None
     game_state['timer_paused'] = False
+    game_state['game_started'] = True
+    
+    for player in game_state['players'].values():
+        player['score'] = 0
     
     socketio.emit('game_started', room=room_id)
     socketio.emit('game_update', get_game_data(room_id), room=room_id)
+
+
+@app.route('/import_questions', methods=['POST'])
+def import_questions_default():
+    return _import_questions_for_room('default')
+
+
+@app.route('/room/<room_id>/import_questions', methods=['POST'])
+def import_questions_room(room_id):
+    return _import_questions_for_room(room_id)
+
 
 def next_question(room_id):
     """Passer à la question suivante"""
@@ -263,7 +430,6 @@ def next_question(room_id):
         game_state['game_finished'] = True
         socketio.emit('game_finished', room=room_id)
         socketio.emit('show_final_results', room=room_id)
-        socketio.start_background_task(reset_game_after_delay, room_id)
     
     socketio.emit('game_update', get_game_data(room_id), room=room_id)
 
@@ -289,6 +455,7 @@ def reset_game(room_id):
     game_state['buzzer_player'] = None
     game_state['timer_paused'] = False
     game_state['game_finished'] = False
+    game_state['game_started'] = False
     socketio.emit('game_reset', room=room_id)
     socketio.emit('game_update', get_game_data(room_id), room=room_id)
 
@@ -308,7 +475,8 @@ def get_game_data(room_id):
         'buzzer_pressed': game_state['buzzer_pressed'],
         'buzzer_player': game_state['buzzer_player'],
         'timer_paused': game_state['timer_paused'],
-        'game_finished': game_state['game_finished']
+        'game_finished': game_state['game_finished'],
+        'game_started': game_state['game_started']
     }
 
 if __name__ == '__main__':
