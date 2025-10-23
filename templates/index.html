@@ -4,7 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Question pour un Disciple</title>
+    <meta name="description" content="Animation complète du quiz Question pour un Disciple : chronomètre, buzzers et classement.">
+    <meta name="theme-color" content="#1e3c72">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Disciple Quiz">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Question pour un Disciple">
+    <meta property="og:description" content="Interface animateur pour le quiz biblique de l'Église Jeunes Prodiges Sherbrooke.">
+    <meta property="og:url" content="{{ request.url }}">
+    <meta property="og:image" content="{{ url_for('static', filename='assets/social-card.png', _external=True) }}">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Question pour un Disciple">
+    <meta name="twitter:description" content="Gérez buzzers et chrono en temps réel.">
+    <meta name="twitter:image" content="{{ url_for('static', filename='assets/social-card.png', _external=True) }}">
+    <link rel="canonical" href="{{ request.url }}">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <link rel="icon" href="{{ url_for('static', filename='icons/app-icon.png') }}" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/app-icon.png') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script defer src="{{ url_for('static', filename='pwa.js') }}"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
 </head>
 <body>

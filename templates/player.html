@@ -1,166 +1,370 @@
 <!DOCTYPE html>
+
 <html lang="fr">
+
 <head>
+
     <meta charset="UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Interface Joueur</title>
+
+    <meta name="description" content="Interface joueur du quiz Question pour un Disciple avec buzzer rapide et score live.">
+
+    <meta name="theme-color" content="#1e3c72">
+
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <meta name="apple-mobile-web-app-title" content="Disciple Quiz">
+
+    <meta property="og:type" content="website">
+
+    <meta property="og:title" content="Interface joueur – Question pour un Disciple">
+
+    <meta property="og:description" content="Buzzez en premier et suivez votre score en direct sur mobile.">
+
+    <meta property="og:url" content="{{ request.url }}">
+
+    <meta property="og:image" content="{{ url_for('static', filename='assets/social-card.png', _external=True) }}">
+
+    <meta name="twitter:card" content="summary_large_image">
+
+    <meta name="twitter:title" content="Interface joueur – Question pour un Disciple">
+
+    <meta name="twitter:description" content="Buzzer réactif et score synchronisé multi-appareils.">
+
+    <meta name="twitter:image" content="{{ url_for('static', filename='assets/social-card.png', _external=True) }}">
+
+    <link rel="canonical" href="{{ request.url }}">
+
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+
+    <link rel="icon" href="{{ url_for('static', filename='icons/app-icon.png') }}" type="image/svg+xml">
+
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/app-icon.png') }}">
+
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <script defer src="{{ url_for('static', filename='pwa.js') }}"></script>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+
 </head>
+
 <body class="player-page">
+
     <div class="player-container">
+
         <div id="login-screen">
+
             <h1>🎮 Rejoindre la partie</h1>
+
             <input type="text" id="player-name" placeholder="Votre nom" maxlength="20">
+
             <button onclick="joinGame()">Rejoindre</button>
+
         </div>
+
+
 
         <div id="game-screen" style="display:none;">
+
             <div class="player-header">
+
                 <h2 id="welcome-text"></h2>
+
                 <div class="player-score">
+
                     Score: <span id="my-score">0</span>
+
                 </div>
+
             </div>
+
+
 
             <div class="buzzer-section">
+
                 <button id="buzzer-btn" onclick="pressBuzzer()" disabled>
+
                     <span>BUZZER</span>
+
                 </button>
+
                 <div id="buzzer-status">En attente du début de partie...</div>
+
             </div>
+
+
 
             <div class="game-info">
+
                 <div id="question-info">Question 0/0</div>
+
                 <div id="timer-info">50s</div>
+
             </div>
+
         </div>
+
     </div>
 
+
+
     <script>
+
         const socket = io();
+
         const roomId = '{{ room_id or "default" }}';
+
         let playerName = '';
+
         let canBuzz = false;
 
+
+
         function joinGame() {
+
             const nameInput = document.getElementById('player-name');
+
             const name = nameInput.value.trim();
+
             
+
             if (!name) {
+
                 alert('Veuillez entrer votre nom');
+
                 return;
+
             }
+
             
+
             if (name.length > 20) {
+
                 alert('Le nom doit faire moins de 20 caractères');
+
                 return;
+
             }
+
             
+
             playerName = name;
+
             socket.emit('join_player', {name: playerName, room_id: roomId});
+
         }
+
         
+
         socket.on('join_success', function(data) {
+
             document.getElementById('login-screen').style.display = 'none';
+
             document.getElementById('game-screen').style.display = 'block';
+
             document.getElementById('welcome-text').textContent = `Bienvenue ${data.name} !`;
+
         });
+
         
+
         socket.on('join_error', function(data) {
+
             alert(data.message);
+
         });
+
+
 
         function pressBuzzer() {
+
             if (canBuzz && playerName) {
+
                 socket.emit('buzzer_press', {player: playerName, room_id: roomId});
+
                 canBuzz = false;
+
                 const btn = document.getElementById('buzzer-btn');
+
                 btn.classList.add('pressed');
+
                 btn.disabled = true;
+
                 document.getElementById('buzzer-status').textContent = 'Buzzer activé !';
+
                 
+
                 // Feedback visuel
+
                 btn.style.transform = 'scale(0.95)';
+
                 setTimeout(() => {
+
                     btn.style.transform = '';
+
                 }, 200);
+
             }
+
         }
 
+
+
         socket.on('game_update', function(data) {
+
             // Mise à jour des informations de jeu
+
             if (data.current_question) {
+
                 document.getElementById('question-info').textContent = 
+
                     `Question ${data.question_number}/${data.total_questions}`;
+
                 
+
                 if (!data.buzzer_pressed && !data.game_finished) {
+
                     canBuzz = true;
+
                     const btn = document.getElementById('buzzer-btn');
+
                     btn.disabled = false;
+
                     btn.classList.remove('pressed');
+
                     document.getElementById('buzzer-status').textContent = 'Prêt à buzzer !';
+
                 }
+
             } else if (!data.game_finished) {
+
                 document.getElementById('question-info').textContent = 'En attente...';
+
                 canBuzz = false;
+
                 document.getElementById('buzzer-btn').disabled = true;
+
             }
+
+
 
             // Mise à jour du score avec animation
+
             if (data.players && data.players[playerName]) {
+
                 const scoreElement = document.getElementById('my-score');
+
                 const newScore = data.players[playerName].score;
+
                 if (scoreElement.textContent !== newScore.toString()) {
+
                     scoreElement.style.transform = 'scale(1.2)';
+
                     scoreElement.textContent = newScore;
+
                     setTimeout(() => {
+
                         scoreElement.style.transform = '';
+
                     }, 300);
+
                 }
+
             }
+
+
 
             if (data.game_finished) {
+
                 document.getElementById('buzzer-status').textContent = 'Jeu terminé !';
+
                 document.getElementById('buzzer-btn').disabled = true;
+
                 canBuzz = false;
+
             }
+
         });
+
+
 
         socket.on('buzzer_activated', function(data) {
+
             if (data.player === playerName) {
+
                 document.getElementById('buzzer-status').textContent = 'Vous avez buzzé en premier ! 🎯';
+
             } else {
+
                 document.getElementById('buzzer-status').textContent = `${data.player} a buzzé en premier`;
+
                 canBuzz = false;
+
                 document.getElementById('buzzer-btn').disabled = true;
+
             }
+
         });
+
+
 
         socket.on('game_finished', function() {
+
             document.getElementById('buzzer-status').innerHTML = 
+
                 '🏆 Jeu terminé !<br>Consultez les résultats sur l\'écran principal.';
+
         });
+
+
 
         // Gestion de la reconnexion
+
         socket.on('disconnect', function() {
+
             document.getElementById('buzzer-status').textContent = 'Connexion perdue...';
+
             document.getElementById('buzzer-btn').disabled = true;
+
             canBuzz = false;
-        });
-        
-        socket.on('reconnect', function() {
-            if (playerName) {
-                socket.emit('join_player', {name: playerName, room_id: roomId});
-            }
+
         });
 
-        // Permettre de rejoindre en appuyant sur Entrée
-        document.getElementById('player-name').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                joinGame();
+        
+
+        socket.on('reconnect', function() {
+
+            if (playerName) {
+
+                socket.emit('join_player', {name: playerName, room_id: roomId});
+
             }
+
         });
+
+
+
+        // Permettre de rejoindre en appuyant sur Entrée
+
+        document.getElementById('player-name').addEventListener('keypress', function(e) {
+
+            if (e.key === 'Enter') {
+
+                joinGame();
+
+            }
+
+        });
+
     </script>
+
 </body>
+
 </html>
+

@@ -1,44 +1,124 @@
 <!DOCTYPE html>
+
 <html lang="fr">
+
 <head>
+
     <meta charset="UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Résultats - Question pour un Disciple</title>
+
+    <meta name="description" content="Résultats finaux du quiz Question pour un Disciple : podium et classement complet.">
+
+    <meta name="theme-color" content="#1e3c72">
+
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <meta name="apple-mobile-web-app-title" content="Disciple Quiz">
+
+    <meta property="og:type" content="website">
+
+    <meta property="og:title" content="Résultats – Question pour un Disciple">
+
+    <meta property="og:description" content="Découvrez le podium et les scores du quiz biblique.">
+
+    <meta property="og:url" content="{{ request.url }}">
+
+    <meta property="og:image" content="{{ url_for('static', filename='assets/social-card.png', _external=True) }}">
+
+    <meta name="twitter:card" content="summary_large_image">
+
+    <meta name="twitter:title" content="Résultats – Question pour un Disciple">
+
+    <meta name="twitter:description" content="Podium animé et classement des joueurs.">
+
+    <meta name="twitter:image" content="{{ url_for('static', filename='assets/social-card.png', _external=True) }}">
+
+    <link rel="canonical" href="{{ request.url }}">
+
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+
+    <link rel="icon" href="{{ url_for('static', filename='icons/app-icon.png') }}" type="image/svg+xml">
+
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/app-icon.png') }}">
+
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
+
+    <script defer src="{{ url_for('static', filename='pwa.js') }}"></script>
+
 <body>
+
     <div class="winner-container">
+
         <h1>🏆 Résultats Finaux 🏆</h1>
+
         
+
         <div class="podium">
+
             {% for player, data in players[:3] %}
+
                 <div class="podium-place place-{{ loop.index }}">
+
                     <div class="trophy">
+
                         {% if loop.index == 1 %}🥇
+
                         {% elif loop.index == 2 %}🥈
+
                         {% else %}🥉
+
                         {% endif %}
+
                     </div>
+
                     <div class="player-name">{{ player }}</div>
+
                     <div class="score">{{ data.score }} points</div>
+
                     <div class="position">{{ loop.index }}{{ 'er' if loop.index == 1 else 'ème' }}</div>
+
                 </div>
+
             {% endfor %}
+
         </div>
+
+
 
         {% if players|length > 3 %}
+
         <div class="other-players">
+
             <h3>Autres participants</h3>
+
             {% for player, data in players[3:] %}
+
                 <div class="player-result">
+
                     <span>{{ loop.index + 3 }}. {{ player }}</span>
+
                     <span>{{ data.score }} points</span>
+
                 </div>
+
             {% endfor %}
+
         </div>
+
         {% endif %}
 
+
+
         <button onclick="window.location.href='/'" class="restart-btn">Nouvelle partie</button>
+
     </div>
+
 </body>
+
 </html>
+

@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_from_directory
 from flask_socketio import SocketIO, emit, join_room, leave_room
 import json
 import os
@@ -415,6 +415,11 @@ def import_questions_default():
 @app.route('/room/<room_id>/import_questions', methods=['POST'])
 def import_questions_room(room_id):
     return _import_questions_for_room(room_id)
+
+
+@app.route('/sw.js')
+def service_worker():
+    return send_from_directory('static', 'sw.js', mimetype='application/javascript')
 
 
 def next_question(room_id):
