@@ -258,7 +258,7 @@ Réponse 2: L'eau changée en vin à Cana
 ![GitHub issues](https://img.shields.io/github/issues/JonathanK-N/question-pour-un-disciple?style=for-the-badge)
 
 **⏱️ Temps de développement :** ~120 heures  
-**📅 Création :** Septembre 2024  
+**📅 Création :** Septembre 2025  
 **🎯 Objectif :** Édifier la communauté chrétienne
 
 </div>
