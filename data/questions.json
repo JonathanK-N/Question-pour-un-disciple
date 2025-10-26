@@ -1,74 +1,99 @@
 [
     {
-        "question": "Je suis né en Égypte, sauvé des eaux et adopté par la fille du Pharaon.J’ai grandi dans le palais royal mais je n’ai jamais oublié mon peuple. J’ai conduit Israël hors de l’esclavage et reçu les dix commandements au Sinaï. Qui suis-je ?",
-        "answer": "Moïse (Exode 2 ; 14 ; 19)"
+        "question": "Elle priait au temple, pleurant amèrement parce qu’elle était stérile, confiant son désir profond au Seigneur et attendant que Dieu accomplisse Sa promesse.",
+        "answer": "Anne (1 Samuel 1:9-20)"
     },
     {
-        "question": "Je suis le plus jeune d’une fratrie nombreuse, berger de métier.J’ai joué de la harpe pour calmer un roi tourmenté. Armé d’une simple fronde, j’ai terrassé un géant avant de devenir roi d’Israël. Qui suis-je ?",
-        "answer": "David (1 Samuel 16-17 ; 2 Samuel 5)"
+        "question": "Il marchait avec Dieu et fut enlevé, vivant chaque jour dans l’intimité avec le Seigneur et la recherche constante de Sa présence.",
+        "answer": "Hénoch (Genèse 5:22-24)"
     },
     {
-        "question": "Emmené en captivité à Babylone, j’ai refusé de manger la nourriture du roi. J’ai reçu de Dieu la sagesse pour interpréter des songes mystérieux. Jeté dans une fosse aux lions, j’en suis sorti indemne. Qui suis-je ?",
-        "answer": "Daniel (Daniel 1 ; 2 ; 6)"
+        "question": "Il cherchait le Seigneur avec ardeur dans le désert, déclarant : “Ô Dieu, tu es mon Dieu, je te cherche dès l’aube ; mon âme a soif de toi.",
+        "answer": "David (Psaume 63:1)"
     },
     {
-        "question": "Offert au service du Seigneur dès mon enfance, j’ai grandi dans le temple. Une nuit, alors que je dormais, j’ai entendu Dieu m’appeler. Je suis devenu juge et prophète en Israël. Qui suis-je ?",
-        "answer": "Samuel (1 Samuel 1 ; 3)"
+        "question": "Montagne où Moïse monta pour recevoir les Dix Commandements et rencontrer Dieu dans la solitude et la prière?",
+        "answer": "Mont Sinaï (Exode 24:18)"
 
     },
     {
-        "question": "Orpheline juive, j’ai été choisie pour devenir reine de Perse. Mon peuple a été menacé d’extermination. J’ai risqué ma vie devant le roi pour plaider en sa faveur. Qui suis-je ?",
-        "answer": "Esther (Esther 2 ; 4)"
+        "question": "Il lutta toute la nuit avec Dieu avant de recevoir la bénédiction, refusant de lâcher prise tant que la présence divine ne s’était pas manifestée",
+        "answer": "Jacob (Genèse 32:24-30)"
     },
     {
-        "question": "Je suis le fils d’une mère juive croyante et d’un père grec. Dès mon enfance, j’ai été instruit dans les Saintes Écritures. Je suis devenu le fidèle compagnon et collaborateur de l’apôtre Paul, qui m’appelait « mon enfant bien-aimé dans la foi ». Qui suis-je ?",
-        "answer": "Timothée (Actes 16:1-3 ; 2 Timothée 1:5 ; 1 Timothée 1:2)"
+        "question": "Objets sacrés utilisés par les sacrificateurs dans l’ancien testament pour consulter la volonté de Dieu, portés sur le pectoral de l’homme chargé de l’intercession.",
+        "answer": "Ourim et Toumim (Exode 28:30)"
     },
     {
-        "question": "Descendant d’Ézéchias, je fais partie des « petits prophètes » de l’Ancien Testament. J’ai annoncé le « jour de l’Éternel » comme un jour de colère et de jugement pour Juda et les nations. Mais j’ai aussi proclamé que Dieu purifierait un peuple et se réjouirait en chantant au milieu de lui. Qui suis-je ?",
-        "answer": "Sophonie (Sophonie 1:1-2 ; Sophonie 3:17)"
+        "question": "Elle s’assit aux pieds de Jésus, laissant de côté les activités de la maison, écoutant chaque parole du Maître avec un cœur avide de Sa sagesse.",
+        "answer": "Marie de Béthanie (Luc 10:38-42)"
     },
     {
-        "question": "Je n’étais ni prophète, ni fils de prophète, mais simple berger et cueilleur de sycomores. Dieu m’a envoyé prophétiser contre Israël, dénonçant l’injustice sociale et l’idolâtrie. Mon livre annonce aussi la restauration future du royaume de David. Qui suis-je ?",
-        "answer": "Amos (Amos 1:1 ; 7:14-15 ; 9:11)"
+        "question": "Il demanda au Seigneur : “Fais-moi voir ta gloire”, priant dans la tente de la Rencontre, désireux de connaître la présence divine plus que tout autre chose.",
+        "answer": "Moïse (Exode 33:18-23)"
     },
     {
-        "question": "J’étais prophétesse et juge en Israël. Sous mon autorité, Barak mena Israël à la victoire contre Sisera. J’ai chanté un cantique de louange après la délivrance. Qui suis-je ?",
-        "answer": "Débora (Juges 4:4-9 ; 5:1-2) "
+        "question": "Attitude de dépouillement de soi par la privation volontaire de nourriture afin de se concentrer sur la prière et la dépendance à Dieu.",
+        "answer": "Jeûne (Daniel 9:3, Exode 34:28)"
     },
     {
-        "question": "Mon vrai nom est Joseph, mais les apôtres m’ont surnommé « fils de l’encouragement ». J’ai vendu un champ et donné l’argent aux apôtres. J’ai accompagné Paul dans ses premiers voyages missionnaires et j’ai soutenu Marc. Qui suis-je ?",
-        "answer": "Jésus – Guérison des dix lépreux (Luc 17) "
+        "question": "Lieu où les disciples se rassemblèrent après l’ascension de Jésus pour prier et attendre le Saint-Esprit, manifestant leur soif de guidance divine.",
+        "answer": "Chambre haute à Jérusalem (Actes 1:13-14)"
     }
     ,
     {
-        "question": "Je marchais avec Dieu. Je n’ai pas connu la mort car Dieu m’a enlevé auprès de lui. Qui suis-je ?",
-        "answer": "Abraham (Genèse 12 ; 15)"
+        "question": "Objet utilisé dans le sanctuaire pour brûler des parfums devant Dieu, symbole de prière et de consécration.",
+        "answer": "Encensoir (Exode 30:1-10)"
     }
     ,
     {
-        "question": "Mon vrai nom est Joseph, mais les apôtres m’ont surnommé « fils de l’encouragement ». J’ai vendu un champ et donné l’argent aux apôtres. J’ai accompagné Paul dans ses premiers voyages missionnaires et j’ai soutenu Marc. Qui suis-je ?",
-        "answer": "Hénoc** (Genèse 5 ; Hébreux 11)"
+        "question": "Juste et pieux, il attendait la consolation d’Israël et entra dans le temple, tenant l’enfant Jésus dans ses bras lorsqu’il vit l’accomplissement de la promesse.",
+        "answer": "Siméon (Luc 2:25-32)"
     }
     ,
     {
-        "question": "Impétueux et passionné, je marchai un instant sur l’eau vers Jésus. La nuit de son arrestation, je l’ai renié trois fois avant le chant du coq. Plus tard, je devins une colonne de l’Église primitive. Qui suis-je ?",
-        "answer": "Pierre (Matthieu 14 ; 26 ; Actes 2)"
+        "question": "Lieu désertique où Jésus fut conduit par l’Esprit pour être tenté, jeûnant et priant avant de commencer son ministère public.",
+        "answer": "Désert de Juda (Matthieu 4:1-11)"
     }
     ,
     {
-        "question": "Je vivais dans le désert, vêtu de poil de chameau et mangeant des sauterelles. Je baptisais dans le Jourdain et annonçais la venue du Messie. Je l’ai désigné comme l’Agneau de Dieu qui ôte le péché du monde. Qui suis-je ?",
-        "answer": "Jean-Baptiste** (Matthieu 3 ; Jean 1)"
+        "question": "fidèle, elle servait Dieu jour et nuit dans le temple, priant et jeûnant, témoignant d’une attente persistante et d’une fidélité indéfectible.",
+        "answer": "Anne (Luc 2:36-38)"
     }
     ,
     {
-        "question": "Petite ville de Juda, j’ai vu naître le Messie. Ma notoriété fut annoncée par le prophète Michée. Les mages sont venus jusqu’à moi en suivant une étoile. Quelle ville suis-je ?",
-        "answer": "Bethléhem (Michée 5 ; Matthieu 2)"
+        "question": "Après un moment de découragement, il s’isola dans le désert et entendit la voix douce de Dieu sur la montagne, apprenant que la Présence divine ne se manifeste pas toujours dans le spectaculaire.",
+        "answer": " Élie (1 Rois 19:9-12)"
     }
     ,
     {
-        "question": "Choisi comme diacre, je prêchais avec puissance, rempli de l’Esprit Saint.Accusé faussement, j’ai été lapidé pour ma foi. Je suis considéré comme le premier martyr chrétien. Qui suis-je ?",
-        "answer": "Étienne** (Actes 6 ; 7)"
+        "question": "Fidèle même en exil, il priait trois fois par jour avec les fenêtres ouvertes vers Jérusalem, manifestant un désir ardent de rester en communion avec Dieu malgré l’oppression.",
+        "answer": "Daniel (Daniel 6:10)"
+    }
+     ,
+    {
+        "question": "Exilé en Babylonie, il reçut la vision du trône de Dieu et prophétisa avec passion, exprimant un désir de voir la gloire et la sainteté du Seigneur restaurées.",
+        "answer": "Ézéchiel (Ézéchiel 1:1-28)"
+    }
+     ,
+    {
+        "question": "Avant d’entrer dans la Terre promise, il se tint devant l’arche et implora le Seigneur pour obtenir guidance et force, démontrant une dépendance totale au plan divin.",
+        "answer": "Josué (Josué 3:3-17)"
+    }
+     ,
+    {
+        "question": "Montagne où Élie entendit la voix douce de Dieu après le vent, le tremblement et le feu, montrant que Dieu se révèle souvent dans le silence et la patience.",
+        "answer": "Mont Horeb (1 Rois 19:9-12)"
+    }
+     ,
+    {
+        "question": "Sur l’île de Patmos, il fut rempli de visions de Dieu dans l’Esprit, consacrant son exil à l’adoration et à la révélation des choses célestes.",
+        "answer": "Jean (Apocalypse 1:9-20"
+    }
+    ,
+    {
+        "question": "Attristé par la situation de Jérusalem, il jeûnait et priait continuellement, cherchant la faveur et l’intervention divine pour restaurer la ville sainte.",
+        "answer": "Nehemie (Néhémie 1:4-11)"
     }
 
     
