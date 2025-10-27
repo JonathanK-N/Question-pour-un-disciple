@@ -279,6 +279,24 @@ Réponse 2: L'eau changée en vin à Cana
 
 ---
 
+## 📜 Licence
+
+<div align="center">
+
+[![License](https://img.shields.io/badge/License-Proprietary-red?style=for-the-badge)](LICENSE)
+
+**© 2024 Jonathan Kakesa Nayaba - Cognito Inc.**  
+*Tous droits réservés - Propriété intellectuelle protégée*
+
+Ce logiciel est protégé par les lois sur le droit d'auteur.  
+Utilisation commerciale interdite sans autorisation écrite.
+
+📧 **Licence commerciale :** [cognito943@gmail.com](mailto:cognito943@gmail.com)
+
+</div>
+
+---
+
 ⭐ **N'oubliez pas de mettre une étoile si ce projet vous plaît !** ⭐
 
 </div>
