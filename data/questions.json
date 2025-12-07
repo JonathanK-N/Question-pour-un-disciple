@@ -1,101 +1,74 @@
 [
     {
-        "question": "Elle priait au temple, pleurant amèrement parce qu’elle était stérile, confiant son désir profond au Seigneur et attendant que Dieu accomplisse Sa promesse.",
-        "answer": "Anne (1 Samuel 1:9-20)"
+        "question": "Quel est le nom du prophète qui a utilisé une pièce de poterie brisée pour symboliser le jugement imminent de Jérusalem par Dieu ?",
+        "answer": "Jérémie (Jérémie 19:1, 10-11)"
     },
     {
-        "question": "Il marchait avec Dieu et fut enlevé, vivant chaque jour dans l’intimité avec le Seigneur et la recherche constante de Sa présence.",
-        "answer": "Hénoch (Genèse 5:22-24)"
+        "question": "Quel général syrien, atteint de la lèpre, a été guéri après s'être baigné sept fois dans le Jourdain sur l'ordre du prophète Élisée ?",
+        "answer": "Naaman (2 Rois 5:10-14)"
     },
     {
-        "question": "Il cherchait le Seigneur avec ardeur dans le désert, déclarant : “Ô Dieu, tu es mon Dieu, je te cherche dès l’aube ; mon âme a soif de toi.",
-        "answer": "David (Psaume 63:1)"
+        "question": "Qui était le père d'Ézéchiel le prophète, mentionné au début du livre comme un prêtre ?",
+        "answer": "Bouzi (Ézéchiel 1:3)"
     },
     {
-        "question": "Montagne où Moïse monta pour recevoir les Dix Commandements et rencontrer Dieu dans la solitude et la prière?",
-        "answer": "Mont Sinaï (Exode 24:18)"
-
+        "question": "À l'exception de Jésus, quel personnage biblique est le seul à avoir été ressuscité par Pierre dans le Nouveau Testament ?",
+        "answer": "Dorcas ou Tabitha (Actes 9:36, 40-41)"
     },
     {
-        "question": "Il lutta toute la nuit avec Dieu avant de recevoir la bénédiction, refusant de lâcher prise tant que la présence divine ne s’était pas manifestée",
-        "answer": "Jacob (Genèse 32:24-30)"
+        "question": "Quel roi de Juda a payé un lourd tribut en or et argent, prélevé sur les trésors du Temple, pour apaiser le roi assyrien Sanchérib, avant de se révolter à nouveau ?",
+        "answer": "Ézéchias (2 Rois 18:14-16)"
     },
     {
-        "question": "Objets sacrés utilisés par les sacrificateurs dans l’ancien testament pour consulter la volonté de Dieu, portés sur le pectoral de l’homme chargé de l’intercession.",
-        "answer": "Ourim et Toumim (Exode 28:30)"
+        "question": "Quel était le nom de l'endroit situé à Jérusalem où un ange troublait l'eau périodiquement, et où Jésus guérit un homme malade depuis 38 ans ?",
+        "answer": "La piscine de Béthesda (Jean 5:2-9)"
     },
     {
-        "question": "Elle s’assit aux pieds de Jésus, laissant de côté les activités de la maison, écoutant chaque parole du Maître avec un cœur avide de Sa sagesse.",
-        "answer": "Marie de Béthanie (Luc 10:38-42)"
+        "question": "Qui est le descendant de Caïn mentionné pour être le premier à avoir forgé des instruments de cuivre et de fer, marquant le début de la métallurgie ?",
+        "answer": "Tubal-Caïn (Genèse 4:22)"
     },
     {
-        "question": "Il demanda au Seigneur : “Fais-moi voir ta gloire”, priant dans la tente de la Rencontre, désireux de connaître la présence divine plus que tout autre chose.",
-        "answer": "Moïse (Exode 33:18-23)"
+        "question": "Quel est le nom de la ville de Lydie où Paul et Silas ont rencontré la marchande de pourpre, Lydie, qui est devenue la première convertie connue en Europe ?",
+        "answer": "Philippes (Actes 16:12, 14)"
     },
     {
-        "question": "Attitude de dépouillement de soi par la privation volontaire de nourriture afin de se concentrer sur la prière et la dépendance à Dieu.",
-        "answer": "Jeûne (Daniel 9:3, Exode 34:28)"
+        "question": "Quel prophète a été témoin de la vision d'une échelle allant de la terre au ciel avec des anges qui montaient et descendaient, et a nommé le lieu Béthel ?",
+        "answer": "Jacob (Genèse 28:12, 19)"
     },
     {
-        "question": "Lieu où les disciples se rassemblèrent après l’ascension de Jésus pour prier et attendre le Saint-Esprit, manifestant leur soif de guidance divine.",
-        "answer": "Chambre haute à Jérusalem (Actes 1:13-14)"
-    }
-    ,
+        "question": "Quel est le nom du gouverneur romain de Judée qui a jugé Paul, l'a gardé en prison pendant deux ans, puis l'a finalement envoyé à Rome ?",
+        "answer": "Festus (Actes 25:11-12)"
+    },
     {
-        "question": "Objet utilisé dans le sanctuaire pour brûler des parfums devant Dieu, symbole de prière et de consécration.",
-        "answer": "Encensoir (Exode 30:1-10)"
-    }
-    ,
+        "question": "Selon l'épître aux Hébreux, quel prêtre mystérieux est « sans père, sans mère, sans généalogie, n’ayant ni commencement de jours ni fin de vie » ?",
+        "answer": "Melchisédech (Hébreux 7:1-3)"
+    },
     {
-        "question": "Juste et pieux, il attendait la consolation d’Israël et entra dans le temple, tenant l’enfant Jésus dans ses bras lorsqu’il vit l’accomplissement de la promesse.",
-        "answer": "Siméon (Luc 2:25-32)"
-    }
-    ,
+        "question": "Quelle est l'épître de Paul qui ne mentionne aucun sujet de réprimande ou de correction, mais se concentre entièrement sur la joie et l'encouragement ?",
+        "answer": "L'épître aux Philippiens (Philippiens 4:4 – thème général)"
+    },
     {
-        "question": "Lieu désertique où Jésus fut conduit par l’Esprit pour être tenté, jeûnant et priant avant de commencer son ministère public.",
-        "answer": "Désert de Juda (Matthieu 4:1-11)"
-    }
-    ,
+        "question": "Quel est le nom de la vallée où Josué a commandé au soleil et à la lune de s'arrêter pour permettre à Israël d'achever sa victoire sur les cinq rois Amorites ?",
+        "answer": "La vallée d'Ayalon (Josué 10:12)"
+    },
     {
-        "question": "fidèle, elle servait Dieu jour et nuit dans le temple, priant et jeûnant, témoignant d’une attente persistante et d’une fidélité indéfectible.",
-        "answer": "Anne (Luc 2:36-38)"
-    }
-    ,
+        "question": "Quel roi de Juda a réussi à s'échapper par un passage secret alors que Babylone assiégeait Jérusalem, mais a été capturé dans la plaine de Jéricho ?",
+        "answer": "Sédécias (2 Rois 25:4-7)"
+    },
     {
-        "question": "Après un moment de découragement, il s’isola dans le désert et entendit la voix douce de Dieu sur la montagne, apprenant que la Présence divine ne se manifeste pas toujours dans le spectaculaire.",
-        "answer": " Élie (1 Rois 19:9-12)"
-    }
-    ,
+        "question": "Qui est le disciple qui a convaincu Nathanaël de venir voir Jésus en disant : « Peut-il venir de Nazareth quelque chose de bon ? » ?",
+        "answer": "Philippe (Jean 1:45-46)"
+    },
     {
-        "question": "Fidèle même en exil, il priait trois fois par jour avec les fenêtres ouvertes vers Jérusalem, manifestant un désir ardent de rester en communion avec Dieu malgré l’oppression.",
-        "answer": "Daniel (Daniel 6:10)"
-    }
-     ,
+        "question": "Quel est le nom du lieu où Moïse a frappé le rocher deux fois pour faire jaillir l'eau, un acte qui lui a coûté l'entrée en Terre Promise ?",
+        "answer": "Mériba ou Meriba (Nombres 20:10-12)"
+    },
     {
-        "question": "Exilé en Babylonie, il reçut la vision du trône de Dieu et prophétisa avec passion, exprimant un désir de voir la gloire et la sainteté du Seigneur restaurées.",
-        "answer": "Ézéchiel (Ézéchiel 1:1-28)"
-    }
-     ,
+        "question": "Qui était le père de l'apôtre Judas Iscariot, selon l'Évangile de Jean ?",
+        "answer": "Simon Iscariot (Jean 6:71)"
+    },
     {
-        "question": "Avant d’entrer dans la Terre promise, il se tint devant l’arche et implora le Seigneur pour obtenir guidance et force, démontrant une dépendance totale au plan divin.",
-        "answer": "Josué (Josué 3:3-17)"
+        "question": "Quel est le nom de la personne qui a construit le veau d'or pour le peuple d'Israël pendant que Moïse recevait les Dix Commandements sur le mont Sinaï ?",
+        "answer": "Aaron (Exode 32:4)"
     }
-     ,
-    {
-        "question": "Montagne où Élie entendit la voix douce de Dieu après le vent, le tremblement et le feu, montrant que Dieu se révèle souvent dans le silence et la patience.",
-        "answer": "Mont Horeb (1 Rois 19:9-12)"
-    }
-     ,
-    {
-        "question": "Sur l’île de Patmos, il fut rempli de visions de Dieu dans l’Esprit, consacrant son exil à l’adoration et à la révélation des choses célestes.",
-        "answer": "Jean (Apocalypse 1:9-20"
-    }
-    ,
-    {
-        "question": "Attristé par la situation de Jérusalem, il jeûnait et priait continuellement, cherchant la faveur et l’intervention divine pour restaurer la ville sainte.",
-        "answer": "Nehemie (Néhémie 1:4-11)"
-    }
-
-    
-
 ]
